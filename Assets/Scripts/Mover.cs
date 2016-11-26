@@ -22,10 +22,6 @@ public class Mover : MonoBehaviour
 		bodyTransform = this.transform;
 		body = this.GetComponent <Rigidbody> ();
 
-//		pos = body.position;
-//		vel = initialVelocity;
-//		acc = Vector3.zero;
-
 		body.velocity = initialVelocity;
 		acc = Vector3.zero;
 	}
@@ -33,18 +29,8 @@ public class Mover : MonoBehaviour
 	// Update is called once per frame
 	void FixedUpdate ()
 	{
-//		vel += acc;
-//		vel = Vector3.ClampMagnitude (vel, topSpeed); // Limit velocity
-//		pos += vel;
-
 		body.AddForce (acc);
 		body.velocity = Vector3.ClampMagnitude (body.velocity, topSpeed); // Limit velocity
-
-
-
-
-//		bodyTransform.position = pos;
-//		body.GetComponent <Rigidbody> ().AddForce (acc);
 	}
 
 
