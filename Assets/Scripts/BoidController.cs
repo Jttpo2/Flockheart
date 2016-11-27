@@ -6,6 +6,7 @@ public class BoidController : MonoBehaviour
 
 	public float minVelocity = 5.0f;
 	public float maxVelocity = 12.0f;
+	public float maxSteeringForce = 10.0f;
 	public float randomness = 1.0f;
 	public int flockSize = 10;
 
@@ -36,8 +37,6 @@ public class BoidController : MonoBehaviour
 			boid.GetComponent <Boid> ().setController (this.gameObject);
 			boids [i] = boid;
 		}
-
-
 	}
 
 	void Update ()
