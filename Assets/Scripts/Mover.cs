@@ -5,7 +5,7 @@ public class Mover : MonoBehaviour
 {
 
 	//	private Transform bodyTransform;
-	private Rigidbody body;
+	//	private Rigidbody body;
 
 	//	private Vector3 pos;
 	//	private Vector3 vel;
@@ -22,7 +22,7 @@ public class Mover : MonoBehaviour
 	void Start ()
 	{
 //		bodyTransform = this.transform;
-		body = this.GetComponent <Rigidbody> ();
+//		body = this.GetComponent <Rigidbody> ();
 
 //		body.velocity = initialVelocity;
 //		acc = Vector3.zero;

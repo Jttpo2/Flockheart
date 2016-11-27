@@ -9,8 +9,8 @@ public class KeyboardFlier : MonoBehaviour
 	public float topSpeed = 10.0f;
 
 	private float accelerationStep = 1.0f;
-	private float noseMovementPerUpdate = 0.4f;
-	private float rollPerUpdate = 0.4f;
+	private float noseMovementPerUpdate = 0.8f;
+	private float rollPerUpdate = 0.8f;
 
 	float liftBooster = 100.0f;
 
