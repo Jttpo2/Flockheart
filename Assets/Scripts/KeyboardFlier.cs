@@ -3,7 +3,6 @@ using System.Collections;
 
 public class KeyboardFlier : MonoBehaviour
 {
-
 	private Rigidbody body;
 
 	private float initialVelocity = 2.0f;
@@ -21,8 +20,6 @@ public class KeyboardFlier : MonoBehaviour
 		body = this.GetComponent<Rigidbody> ();
 		body.velocity = body.transform.forward * initialVelocity;
 	}
-
-
 
 	void FixedUpdate ()
 	{
@@ -62,35 +59,26 @@ public class KeyboardFlier : MonoBehaviour
 	private void accelerate ()
 	{
 		body.AddRelativeForce (body.transform.forward * accelerationStep);
-		//		body.velocity += body.velocity.normalized * accelerationStep;
-		Debug.Log (body.velocity);
 	}
 
 	// Not working
 	private void decelerate ()
 	{
 		body.AddRelativeForce (-body.transform.forward * accelerationStep);
-//		body.velocity -= body.velocity.normalized * accelerationStep;
-		Debug.Log (body.velocity);
 	}
 
 	private void noseUp ()
 	{
-//		body.AddRelativeForce (new Vector3 (-noseMovementPerUpdate, 0.0f, 0.0f));
-//		body.transform.Rotate (new Vector3 (-noseMovementPerUpdate, 0.0f, 0.0f));
 		angleNose (-noseMovementPerUpdate);
 	}
 
 	private void noseDown ()
 	{
-//		body.AddRelativeForce (new Vector3 (noseMovementPerUpdate, 0.0f, 0.0f));
-//		body.transform.Rotate (new Vector3 (noseMovementPerUpdate, 0.0f, 0.0f));
 		angleNose (noseMovementPerUpdate);
 	}
 
 	private void angleNose (float amount)
 	{
-//		body.AddTorque (new Vector3 (0.0f, 0.0f, amount));	
 		body.AddTorque (transform.right * amount);
 	}
 
