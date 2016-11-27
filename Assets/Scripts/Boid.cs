@@ -3,7 +3,7 @@ using System.Collections;
 
 public class Boid : MonoBehaviour
 {
-	private GameObject controllerGameObject;
+	//	private GameObject controllerGameObject;
 	private BoidController boidController;
 	private bool isInitiated = false;
 	private float minVel;
@@ -30,29 +30,24 @@ public class Boid : MonoBehaviour
 				// Steer toward target
 				seek (commander.transform.position);
 
+//				seek (commander.GetComponent <Rigidbody> ().transform.position);
+
 //				body.velocity += calcVelocity () * Time.deltaTime;
 
 				// Clamp velocity
-				if (body.velocity.magnitude > maxVel) {
-					body.velocity = Vector3.ClampMagnitude (body.velocity, maxVel);
-				} else if (body.velocity.magnitude < minVel) {
-					body.velocity = body.velocity.normalized * minVel;
-				}
+//				if (body.velocity.magnitude > maxVel) {
+//					body.velocity = Vector3.ClampMagnitude (body.velocity, maxVel);
+//				} else if (body.velocity.magnitude < minVel) {
+//					body.velocity = body.velocity.normalized * minVel;
+//				}
 
 
 			}
-			float waitTime = Random.Range (0.3f, 0.5f);
+			float waitTime = Random.Range (0.005f, 0.01f);
 			yield return new WaitForSeconds (waitTime);
 
 		}
 	}
-
-	//	private Vector3 calcSteeringForce ()
-	//	{
-	//		return desired = commander.transform.position;
-	//
-	//
-	//	}
 
 	private void seek (Vector3 targetPosition)
 	{
@@ -63,26 +58,52 @@ public class Boid : MonoBehaviour
 
 		Vector3 steeringVector = desired - body.velocity;
 		steeringVector = Vector3.ClampMagnitude (steeringVector, maxSteeringForce);
-		body.AddForce (steeringVector); // * Time.deltaTime);
+		body.AddForce (steeringVector);
+
+		// Point the transform in the direction of it's velocity
+		transform.LookAt (transform.TransformDirection (body.velocity));
+//		body.transform.LookAt (body.velocity);
+//		Vector3 forward = transform.TransformDirection (Vector3.forward) * 10;
+		Debug.DrawRay (Vector3.zero, body.velocity, Color.green);
 	}
 
-	private Vector3 calcVelocity ()
-	{
-		Vector3 randomize = new Vector3 ((Random.value * 2) * -1, (Random.value * 2) * -1, (Random.value * 2) * -1);
 
-		randomize.Normalize ();
-		boidController = controllerGameObject.GetComponent <BoidController> ();
-		Vector3 flockCenter = boidController.flockCenter;
-		Vector3 flockVelocity = boidController.flockVelocity;
-		Vector3 follow = commander.transform.localPosition;
 
-		// Head  towards flock center?
-		flockCenter = flockCenter - transform.localPosition;
-		flockVelocity = flockVelocity - GetComponent <Rigidbody> ().velocity;
-		follow = follow - transform.localPosition;
-			
-		return (flockCenter + flockVelocity + follow * 2 + randomize * randomness);
-	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	//	private Vector3 calcVelocity ()
+	//	{
+	//		Vector3 randomize = new Vector3 ((Random.value * 2) * -1, (Random.value * 2) * -1, (Random.value * 2) * -1);
+	//
+	//		randomize.Normalize ();
+	//		boidController = controllerGameObject.GetComponent <BoidController> ();
+	//		Vector3 flockCenter = boidController.flockCenter;
+	//		Vector3 flockVelocity = boidController.flockVelocity;
+	//		Vector3 follow = commander.transform.localPosition;
+	//
+	//		// Head  towards flock center?
+	//		flockCenter = flockCenter - transform.localPosition;
+	//		flockVelocity = flockVelocity - GetComponent <Rigidbody> ().velocity;
+	//		follow = follow - transform.localPosition;
+	//
+	//		return (flockCenter + flockVelocity + follow * 2 + randomize * randomness);
+	//	}
 
 	void Update ()
 	{
@@ -91,12 +112,12 @@ public class Boid : MonoBehaviour
 
 	public void setController (GameObject controller)
 	{
-		this.controllerGameObject = controller;
+//		this.controllerGameObject = controller;
 		boidController = controller.GetComponent <BoidController> ();
-		minVel = boidController.minVelocity;
-		maxVel = boidController.maxVelocity;
-		maxSteeringForce = boidController.maxSteeringForce;
-		randomness = boidController.randomness;
+		minVel = boidController.getMinVelocity ();
+		maxVel = boidController.getMaxVelocity ();
+		maxSteeringForce = boidController.getMaxSteeringForce ();
+		randomness = boidController.getRandomness ();
 		commander = boidController.commander;
 		isInitiated = true;
 	}

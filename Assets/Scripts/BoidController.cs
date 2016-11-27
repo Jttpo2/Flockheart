@@ -4,17 +4,17 @@ using System.Collections;
 public class BoidController : MonoBehaviour
 {
 
-	public float minVelocity = 5.0f;
-	public float maxVelocity = 12.0f;
-	public float maxSteeringForce = 10.0f;
-	public float randomness = 1.0f;
-	public int flockSize = 10;
+	private float minVelocity = 5.0f;
+	private float maxVelocity = 10.0f;
+	private float maxSteeringForce = 5.0f;
+	private float randomness = 1.0f;
+	private int flockSize = 1;
 
 	public GameObject prefab;
 	public GameObject commander;
 
-	public Vector3 flockCenter;
-	public Vector3 flockVelocity;
+	private Vector3 flockCenter;
+	private Vector3 flockVelocity;
 
 	private GameObject[] boids;
 
@@ -51,5 +51,35 @@ public class BoidController : MonoBehaviour
 
 		flockCenter = theCenter / flockSize;
 		flockVelocity = theVelocity / flockSize;
+	}
+
+	public float getMinVelocity ()
+	{
+		return minVelocity;
+	}
+
+	public float getMaxVelocity ()
+	{
+		return maxVelocity;
+	}
+
+	public float getMaxSteeringForce ()
+	{
+		return maxSteeringForce;
+	}
+
+	public float getRandomness ()
+	{
+		return randomness;
+	}
+
+	public Vector3 getFlockCenter ()
+	{
+		return flockCenter;
+	}
+
+	public Vector3 getFlockVelocity ()
+	{
+		return flockVelocity;
 	}
 }

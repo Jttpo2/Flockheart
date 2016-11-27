@@ -8,7 +8,7 @@ public class BoidWatcher : MonoBehaviour
 	void LateUpdate ()
 	{
 		if (boidController) {
-			Vector3 watchPoint = boidController.GetComponent<BoidController> ().flockCenter;
+			Vector3 watchPoint = boidController.GetComponent<BoidController> ().getFlockCenter ();
 			transform.LookAt (watchPoint + boidController.transform.position);
 		}
 	}
