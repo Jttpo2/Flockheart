@@ -30,6 +30,9 @@ public class Boid : MonoBehaviour
 				// Steer toward target
 				seek (commander.transform.position);
 
+				// Point the transform in the direction of it's velocity
+				transform.LookAt (transform.position - body.velocity);
+
 //				seek (commander.GetComponent <Rigidbody> ().transform.position);
 
 //				body.velocity += calcVelocity () * Time.deltaTime;
@@ -60,11 +63,7 @@ public class Boid : MonoBehaviour
 		steeringVector = Vector3.ClampMagnitude (steeringVector, maxSteeringForce);
 		body.AddForce (steeringVector);
 
-		// Point the transform in the direction of it's velocity
-		transform.LookAt (transform.TransformDirection (body.velocity));
-//		body.transform.LookAt (body.velocity);
-//		Vector3 forward = transform.TransformDirection (Vector3.forward) * 10;
-		Debug.DrawRay (Vector3.zero, body.velocity, Color.green);
+
 	}
 
 

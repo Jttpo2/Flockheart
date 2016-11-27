@@ -8,7 +8,7 @@ public class BoidController : MonoBehaviour
 	private float maxVelocity = 10.0f;
 	private float maxSteeringForce = 5.0f;
 	private float randomness = 1.0f;
-	private int flockSize = 1;
+	private int flockSize = 10;
 
 	public GameObject prefab;
 	public GameObject commander;
