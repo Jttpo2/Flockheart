@@ -9,18 +9,20 @@ public class KeyboardFlier : MonoBehaviour
 	private float initialVelocity = 2.0f;
 	public float topSpeed = 10.0f;
 
-	private float accelerationStep = 0.5f;
-	private Vector3 accelerationVector;
-	private float noseMovementPerUpdate = 0.2f;
-	private float rollPerUpdate = 0.2f;
+	private float accelerationStep = 1.0f;
+	private float noseMovementPerUpdate = 0.4f;
+	private float rollPerUpdate = 0.4f;
+
+	float liftBooster = 100.0f;
 
 	// Use this for initialization
 	void Start ()
 	{
 		body = this.GetComponent<Rigidbody> ();
 		body.velocity = body.transform.forward * initialVelocity;
-		accelerationVector = new Vector3 (0.0f, accelerationStep, 0.0f);
 	}
+
+
 
 	void FixedUpdate ()
 	{
@@ -42,31 +44,34 @@ public class KeyboardFlier : MonoBehaviour
 			rollRight ();
 		}
 
-
-		// Lift
-		float liftBooster = 100.0f;
-		Vector3 lift = Vector3.Project (body.velocity, transform.forward);
-		body.AddForce (transform.up * lift.magnitude * liftBooster);
+		// Lift, to make it follow it's nose
+		Vector3 lift = Vector3.Project (body.velocity, transform.up);
+		body.AddForce (transform.forward * lift.magnitude * liftBooster);
 
 		// Set angular drag relative to speed
-		body.drag = 0.01f * body.velocity.magnitude;
+		body.drag = 0.001f * body.velocity.magnitude;
 		body.angularDrag = 0.1f * body.velocity.magnitude;
 
+		// Limit speed
 		body.velocity = Vector3.ClampMagnitude (body.velocity, topSpeed); // Limit velocity
 
-
 	}
 
+
+	// Not working
 	private void accelerate ()
 	{
-		body.AddRelativeForce (accelerationVector);
+		body.AddRelativeForce (body.transform.forward * accelerationStep);
 		//		body.velocity += body.velocity.normalized * accelerationStep;
+		Debug.Log (body.velocity);
 	}
 
+	// Not working
 	private void decelerate ()
 	{
-		body.AddRelativeForce (-accelerationVector);
+		body.AddRelativeForce (-body.transform.forward * accelerationStep);
 //		body.velocity -= body.velocity.normalized * accelerationStep;
+		Debug.Log (body.velocity);
 	}
 
 	private void noseUp ()
@@ -86,7 +91,7 @@ public class KeyboardFlier : MonoBehaviour
 	private void angleNose (float amount)
 	{
 //		body.AddTorque (new Vector3 (0.0f, 0.0f, amount));	
-		body.AddTorque (transform.forward * amount);
+		body.AddTorque (transform.right * amount);
 	}
 
 
@@ -102,6 +107,6 @@ public class KeyboardFlier : MonoBehaviour
 
 	private void roll (float amount)
 	{
-		body.AddTorque (transform.up * amount);
+		body.AddTorque (transform.forward * amount);
 	}
 }
