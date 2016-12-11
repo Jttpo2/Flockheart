@@ -11,6 +11,8 @@ public class Boid : MonoBehaviour
 	private float maxSteeringForce;
 	private float randomness;
 	private GameObject commander;
+	private float slowDownDistance;
+	private float fleeingDistance;
 
 	private Rigidbody body;
 
@@ -29,6 +31,12 @@ public class Boid : MonoBehaviour
 
 				// Steer toward target
 				seek (commander.transform.position);
+
+				// Go towards target and slow down if too close
+				arrive (commander.transform.position);
+
+				// Flee from antagonist
+//				flee (commander.transform.position);
 
 				// Point the transform in the direction of it's velocity
 				transform.LookAt (transform.position - body.velocity);
@@ -52,9 +60,9 @@ public class Boid : MonoBehaviour
 		}
 	}
 
+	// Steer toward target
 	private void seek (Vector3 targetPosition)
 	{
-		
 		Vector3 desired = targetPosition - body.transform.position;
 		desired.Normalize ();
 		desired *= maxVel;
@@ -62,12 +70,55 @@ public class Boid : MonoBehaviour
 		Vector3 steeringVector = desired - body.velocity;
 		steeringVector = Vector3.ClampMagnitude (steeringVector, maxSteeringForce);
 		body.AddForce (steeringVector);
+	}
 
+	// Move away from antagonist
+	private void flee (Vector3 antagonist)
+	{
+		Vector3 desired = (antagonist * -1) - body.transform.position;
+		float distance = desired.magnitude;
 
+		desired.Normalize ();
+		if (distance < fleeingDistance) {
+			float m = map (distance, 0, fleeingDistance, maxVel, 0);
+			desired *= m;
+
+		} else {
+			// Don't affect course when antagonist is outside fleeing distance
+		}
+
+		Vector3 steeringVector = desired - body.velocity;
+		steeringVector = Vector3.ClampMagnitude (steeringVector, maxSteeringForce);
+		body.AddForce (steeringVector);
+	}
+
+	// Go towards target and slow down if too close
+	private void arrive (Vector3 target)
+	{
+		Vector3 desired = target - body.transform.position;
+		float distance = desired.magnitude;
+
+		desired.Normalize ();
+
+		if (distance < slowDownDistance) {
+			float m = map (distance, 0, slowDownDistance, 0, maxVel); // Map to max velocity
+			desired *= m;
+		} else {
+			// Continue at max velocity
+			desired *= maxVel;
+		}
+
+		Vector3 steeringVector = desired - body.velocity;
+		steeringVector = Vector3.ClampMagnitude (steeringVector, maxSteeringForce);
+		body.AddForce (steeringVector);
 	}
 
 
-
+	// Map between number ranges
+	public static float map (float s, float a1, float a2, float b1, float b2)
+	{
+		return b1 + (s - a1) * (b2 - b1) / (a2 - a1);
+	}
 
 
 
@@ -117,6 +168,9 @@ public class Boid : MonoBehaviour
 		maxVel = boidController.getMaxVelocity ();
 		maxSteeringForce = boidController.getMaxSteeringForce ();
 		randomness = boidController.getRandomness ();
+		slowDownDistance = boidController.getSlowdownDistance ();
+		fleeingDistance = boidController.getFleeingDistance ();
+
 		commander = boidController.commander;
 		isInitiated = true;
 	}

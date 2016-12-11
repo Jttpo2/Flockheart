@@ -5,10 +5,12 @@ public class BoidController : MonoBehaviour
 {
 
 	private float minVelocity = 5.0f;
-	private float maxVelocity = 10.0f;
+	private float maxVelocity = 20.0f;
 	private float maxSteeringForce = 5.0f;
 	private float randomness = 1.0f;
 	private int flockSize = 10;
+	private float slowDownDistance = 10.0f;
+	private float fleeingDistance = 20.0f;
 
 	public GameObject prefab;
 	public GameObject commander;
@@ -81,5 +83,15 @@ public class BoidController : MonoBehaviour
 	public Vector3 getFlockVelocity ()
 	{
 		return flockVelocity;
+	}
+
+	public float getSlowdownDistance ()
+	{
+		return slowDownDistance;
+	}
+
+	public float getFleeingDistance ()
+	{
+		return fleeingDistance;
 	}
 }
