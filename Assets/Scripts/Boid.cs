@@ -15,6 +15,8 @@ public class Boid : MonoBehaviour
 	private float fleeingDistance;
 	private float desiredSeparation;
 
+	private float desiredCohesion = 100.0f;
+
 	private Rigidbody body;
 
 	void Start ()
@@ -41,6 +43,9 @@ public class Boid : MonoBehaviour
 
 				// Separate from other close by boids
 				separate (boidController.getFlock ());
+
+				// Cohere to far away boids
+				cohere (boidController.getFlock ());
 
 				// Point the transform in the direction of it's velocity
 				transform.LookAt (transform.position - body.velocity);
@@ -137,6 +142,33 @@ public class Boid : MonoBehaviour
 		}
 		if (closeBoids > 0) { // Don't divide with 0
 			sum /= closeBoids;
+			sum.Normalize ();
+			sum *= maxVel;
+			Vector3 steeringVector = sum - body.velocity;
+			steeringVector = Vector3.ClampMagnitude (steeringVector, maxSteeringForce);
+			body.AddForce (steeringVector);
+		}
+	}
+
+	private void cohere (GameObject[] flock)
+	{
+		Vector3 sum = Vector3.zero;
+		int farBoids = 0; // Counting the amount of boids within separation distance 
+
+		foreach (GameObject boid in flock) {
+			float d = Vector3.Distance (boid.transform.position, body.position);
+
+			if (d > desiredCohesion) {
+				Vector3 diff = body.position + boid.transform.position;
+				diff.Normalize ();// Should we normalize here?
+
+				diff *= d; // Cohere more with larger distance
+				sum += diff;
+				farBoids++;
+			}
+		}
+		if (farBoids > 0) { // Don't divide with 0
+			sum /= farBoids;
 			sum.Normalize ();
 			sum *= maxVel;
 			Vector3 steeringVector = sum - body.velocity;
