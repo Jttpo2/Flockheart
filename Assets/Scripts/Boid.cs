@@ -13,6 +13,7 @@ public class Boid : MonoBehaviour
 	private GameObject commander;
 	private float slowDownDistance;
 	private float fleeingDistance;
+	private float desiredSeparation;
 
 	private Rigidbody body;
 
@@ -30,13 +31,16 @@ public class Boid : MonoBehaviour
 //				body.velocity += calcSteeringForce () * Time.deltaTime;
 
 				// Steer toward target
-				seek (commander.transform.position);
+//				seek (commander.transform.position);
 
 				// Go towards target and slow down if too close
 				arrive (commander.transform.position);
 
 				// Flee from antagonist
 //				flee (commander.transform.position);
+
+				// Separate from other close by boids
+				separate (boidController.getFlock ());
 
 				// Point the transform in the direction of it's velocity
 				transform.LookAt (transform.position - body.velocity);
@@ -113,6 +117,35 @@ public class Boid : MonoBehaviour
 		body.AddForce (steeringVector);
 	}
 
+	private void separate (GameObject[] flock)
+	{
+		Vector3 sum = Vector3.zero;
+		int closeBoids = 0; // Counting the amount of boids within separation distance 
+
+		foreach (GameObject boid in flock) {
+			float d = Vector3.Distance (boid.transform.position, body.position);
+
+
+			if (d > 0 && d < desiredSeparation) {
+				Vector3 diff = body.position - boid.transform.position;
+				diff.Normalize ();// Should we normalize here?
+
+				diff /= d; // Separating less with larger distance
+				sum += diff;
+				closeBoids++;
+			}
+		}
+		if (closeBoids > 0) { // Don't divide with 0
+			sum /= closeBoids;
+			sum.Normalize ();
+			sum *= maxVel;
+			Vector3 steeringVector = sum - body.velocity;
+			steeringVector = Vector3.ClampMagnitude (steeringVector, maxSteeringForce);
+			body.AddForce (steeringVector);
+		}
+	}
+
+
 
 	// Map between number ranges
 	public static float map (float s, float a1, float a2, float b1, float b2)
@@ -170,6 +203,7 @@ public class Boid : MonoBehaviour
 		randomness = boidController.getRandomness ();
 		slowDownDistance = boidController.getSlowdownDistance ();
 		fleeingDistance = boidController.getFleeingDistance ();
+		desiredSeparation = boidController.getDesiredSeparation ();
 
 		commander = boidController.commander;
 		isInitiated = true;
