@@ -22,12 +22,14 @@ public class Boid : MonoBehaviour
 	private float maxSensingDistance = 100.0f;
 
 	private float minRandom = 0.0f;
-	private float maxRandom = 20.0f;
+	private float maxRandom = 10.0f;
 
 	private Rigidbody body;
 
 	void Start ()
 	{
+		Random.InitState (System.DateTime.Today.Millisecond);
+
 		body = GetComponent <Rigidbody> ();
 		StartCoroutine ("Steering");
 	}
@@ -72,7 +74,7 @@ public class Boid : MonoBehaviour
 					body.velocity = body.velocity.normalized * minVel;
 				}
 			}
-			float waitTime = Random.Range (0.005f, 0.01f);
+			float waitTime = Random.Range (0.005f, 0.05f);
 			yield return new WaitForSeconds (waitTime);
 
 		}
