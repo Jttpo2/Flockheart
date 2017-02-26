@@ -73,8 +73,8 @@ public class Boid : MonoBehaviour
 				body.AddForce (fleeVector);
 				body.AddForce (separateVector);
 				body.AddForce (cohereVector);
-				body.AddForce (alignVector);
-				body.AddForce (randomVector);
+//				body.AddForce (alignVector);
+//				body.AddForce (randomVector);
 //
 				// Point the transform in the direction of it's velocity
 				pointTowardsVelocity ();
@@ -194,10 +194,7 @@ public class Boid : MonoBehaviour
 		Vector3 steeringVector = Vector3.zero;
 		if (nearBoids > 0) { // Don't divide with 0
 			sum /= nearBoids;
-			sum.Normalize ();
-			sum *= maxVel;
-			steeringVector = sum - body.velocity;
-			steeringVector = Vector3.ClampMagnitude (steeringVector, maxSteeringForce);
+			steeringVector = seek (sum);
 		}
 		return steeringVector;
 	}
