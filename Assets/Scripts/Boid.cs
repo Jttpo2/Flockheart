@@ -60,13 +60,13 @@ public class Boid : MonoBehaviour
 //				// Sprinkle a bit of randomness to simulate free will
 				Vector3 randomVector = addRandom ();
 //
-				seekVector *= 0.8f;
+				seekVector *= 0.01f;
 				arriveVector *= 0.0f;
 				fleeVector *= 1.0f;
 				separateVector *= 1.0f;
 				cohereVector *= 0.1f;
-				alignVector *= 1.0f;
-				randomVector *= 0.5f;
+				alignVector *= 0.7f;
+				randomVector *= 0.1f;
 
 				body.AddForce (seekVector);
 				body.AddForce (arriveVector);
@@ -204,7 +204,27 @@ public class Boid : MonoBehaviour
 
 	Vector3 align (GameObject[] flock)
 	{
-		return Vector3.zero;
+		int nearBoids = 0;
+
+		Vector3 sum = Vector3.zero;
+		foreach (GameObject boid in flock) {
+			float d = Vector3.Distance (boid.transform.position, body.position);
+			if (d > 0 && d < maxSensingDistance) {
+				sum += boid.GetComponent <Rigidbody> ().velocity;
+				nearBoids++;
+			}
+
+		}
+		Vector3 steeringVector = Vector3.zero;
+		if (nearBoids > 0) {
+			sum /= nearBoids;
+			sum.Normalize ();
+			sum *= maxVel;
+			steeringVector = sum - body.velocity;
+			steeringVector = Vector3.ClampMagnitude (steeringVector, maxSteeringForce);
+		}
+
+		return steeringVector;
 	}
 
 	Vector3 addRandom ()
