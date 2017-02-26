@@ -60,21 +60,21 @@ public class Boid : MonoBehaviour
 //				// Sprinkle a bit of randomness to simulate free will
 				Vector3 randomVector = addRandom ();
 //
-				seekVector *= 0.01f;
+				seekVector *= 0.3f;
 				arriveVector *= 0.0f;
-				fleeVector *= 1.0f;
-				separateVector *= 1.0f;
+				fleeVector *= 0.0f;
+				separateVector *= 0.2f;
 				cohereVector *= 0.1f;
-				alignVector *= 0.7f;
-				randomVector *= 0.1f;
+				alignVector *= 0.01f;
+				randomVector *= 0.05f;
 
 				body.AddForce (seekVector);
 				body.AddForce (arriveVector);
 				body.AddForce (fleeVector);
 				body.AddForce (separateVector);
 				body.AddForce (cohereVector);
-//				body.AddForce (alignVector);
-//				body.AddForce (randomVector);
+				body.AddForce (alignVector);
+				body.AddForce (randomVector);
 //
 				// Point the transform in the direction of it's velocity
 				pointTowardsVelocity ();
@@ -99,9 +99,8 @@ public class Boid : MonoBehaviour
 		desired.Normalize ();
 		desired *= maxVel;
 
-		Vector3 steeringVector = desired - body.velocity;
-		steeringVector = Vector3.ClampMagnitude (steeringVector, maxSteeringForce);
-		return steeringVector;
+		desired -= body.velocity;
+		return Vector3.ClampMagnitude (desired, maxSteeringForce);
 	}
 
 	// Move away from antagonist
