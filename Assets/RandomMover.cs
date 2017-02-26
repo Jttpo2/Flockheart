@@ -50,7 +50,7 @@ public class RandomMover : MonoBehaviour
 
 			body.position = calcRandVector ();
 			body.position -= centeringVector;
-			body.position = new Vector3 (body.position.x, body.position.y, body.transform.localScale.z);
+			body.position = new Vector3 (body.position.x, body.transform.localScale.y * 10.0f, body.position.z);
 //			
 			body.velocity = Vector3.zero;
 			//		body.AddForce (calcRandVector ());
