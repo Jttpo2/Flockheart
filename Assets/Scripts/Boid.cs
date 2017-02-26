@@ -38,34 +38,46 @@ public class Boid : MonoBehaviour
 	{
 		while (true) {
 			if (isInitiated) {
-				// Get steering force
-//				body.velocity += calcSteeringForce () * Time.deltaTime;
 
 				// Steer toward target
-//				seek (commander.transform.position);
+				Vector3 seekVector = seek (commander.transform.position);
 
-				// Go towards target and slow down if too close
-//				arrive (commander.transform.position);
+//				// Go towards target and slow down if too close
+				Vector3 arriveVector = arrive (commander.transform.position);
+//
+//				// Flee from antagonist
+				Vector3 fleeVector = flee (commander.transform.position);
+//
+//				// Separate from other close by boids
+				Vector3 separateVector = separate (boidController.getFlock ());
+//
+//				// Cohere to far away boids
+				Vector3 cohereVector = cohere (boidController.getFlock ());
+//
+//				// Align with the rest of the flock
+				Vector3 alignVector = align (boidController.getFlock ());
+//
+//				// Sprinkle a bit of randomness to simulate free will
+				Vector3 randomVector = addRandom ();
+//
+				seekVector *= 0.8f;
+				arriveVector *= 0.0f;
+				fleeVector *= 1.0f;
+				separateVector *= 1.0f;
+				cohereVector *= 0.1f;
+				alignVector *= 1.0f;
+				randomVector *= 0.5f;
 
-				// Flee from antagonist
-//				flee (commander.transform.position);
-
-				// Separate from other close by boids
-				separate (boidController.getFlock ());
-
-				// Cohere to far away boids
-				cohere (boidController.getFlock ());
-
-				// Align with the rest of the flock
-//				align (boidController.getFlock ());
-
-				// Sprinkle a bit of randomness to simulate free will
-				addRandom ();
-
+				body.AddForce (seekVector);
+				body.AddForce (arriveVector);
+				body.AddForce (fleeVector);
+				body.AddForce (separateVector);
+				body.AddForce (cohereVector);
+				body.AddForce (alignVector);
+				body.AddForce (randomVector);
+//
 				// Point the transform in the direction of it's velocity
 				pointTowardsVelocity ();
-
-//				body.velocity += calcVelocity () * Time.deltaTime;
 
 				// Clamp velocity
 				if (body.velocity.magnitude > maxVel) {
@@ -81,7 +93,7 @@ public class Boid : MonoBehaviour
 	}
 
 	// Steer toward target
-	private void seek (Vector3 targetPosition)
+	private Vector3 seek (Vector3 targetPosition)
 	{
 		Vector3 desired = targetPosition - body.transform.position;
 		desired.Normalize ();
@@ -89,11 +101,11 @@ public class Boid : MonoBehaviour
 
 		Vector3 steeringVector = desired - body.velocity;
 		steeringVector = Vector3.ClampMagnitude (steeringVector, maxSteeringForce);
-		body.AddForce (steeringVector);
+		return steeringVector;
 	}
 
 	// Move away from antagonist
-	private void flee (Vector3 antagonist)
+	private Vector3 flee (Vector3 antagonist)
 	{
 		Vector3 desired = (antagonist * -1) - body.transform.position;
 		float distance = desired.magnitude;
@@ -109,11 +121,11 @@ public class Boid : MonoBehaviour
 
 		Vector3 steeringVector = desired - body.velocity;
 		steeringVector = Vector3.ClampMagnitude (steeringVector, maxSteeringForce);
-		body.AddForce (steeringVector);
+		return steeringVector;
 	}
 
 	// Go towards target and slow down if too close
-	private void arrive (Vector3 target)
+	private Vector3 arrive (Vector3 target)
 	{
 		Vector3 desired = target - body.transform.position;
 		float distance = desired.magnitude;
@@ -130,10 +142,10 @@ public class Boid : MonoBehaviour
 
 		Vector3 steeringVector = desired - body.velocity;
 		steeringVector = Vector3.ClampMagnitude (steeringVector, maxSteeringForce);
-		body.AddForce (steeringVector);
+		return steeringVector;
 	}
 
-	private void separate (GameObject[] flock)
+	private Vector3 separate (GameObject[] flock)
 	{
 		Vector3 sum = Vector3.zero;
 		int tooCloseBoids = 0; // Counting the amount of boids within separation distance 
@@ -150,18 +162,19 @@ public class Boid : MonoBehaviour
 				tooCloseBoids++;
 			}
 		}
+		Vector3 steeringVector = Vector3.zero;
 		if (tooCloseBoids > 0) { // Don't divide with 0
 			sum /= tooCloseBoids;
 			sum.Normalize ();
 			sum *= maxVel;
-			Vector3 steeringVector = sum - body.velocity;
+			steeringVector = sum - body.velocity;
 			steeringVector = Vector3.ClampMagnitude (steeringVector, maxSteeringForce);
-			body.AddForce (steeringVector);
 		}
+		return steeringVector;
 	}
 
 	// Go towards mass of flock
-	private void cohere (GameObject[] flock)
+	private Vector3 cohere (GameObject[] flock)
 	{
 		Vector3 sum = Vector3.zero;
 		int nearBoids = 0; // Counting the amount of boids within separation distance 
@@ -178,28 +191,29 @@ public class Boid : MonoBehaviour
 				nearBoids++;
 			}
 		}
+		Vector3 steeringVector = Vector3.zero;
 		if (nearBoids > 0) { // Don't divide with 0
 			sum /= nearBoids;
 			sum.Normalize ();
 			sum *= maxVel;
-			Vector3 steeringVector = sum - body.velocity;
+			steeringVector = sum - body.velocity;
 			steeringVector = Vector3.ClampMagnitude (steeringVector, maxSteeringForce);
-			body.AddForce (steeringVector);
 		}
+		return steeringVector;
 	}
 
-	void align (GameObject[] flock)
+	Vector3 align (GameObject[] flock)
 	{
-		
+		return Vector3.zero;
 	}
 
-	void addRandom ()
+	Vector3 addRandom ()
 	{
 		Vector3 randomVector = new Vector3 (
 			                       Random.Range (minRandom, maxRandom), 
 			                       Random.Range (minRandom, maxRandom), 
 			                       Random.Range (minRandom, maxRandom));
-		body.AddForce (randomVector);
+		return randomVector;
 	}
 
 	void pointTowardsVelocity ()
