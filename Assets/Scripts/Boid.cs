@@ -36,7 +36,7 @@ public class Boid : MonoBehaviour
 //				seek (commander.transform.position);
 
 				// Go towards target and slow down if too close
-				arrive (commander.transform.position);
+//				arrive (commander.transform.position);
 
 				// Flee from antagonist
 //				flee (commander.transform.position);
@@ -48,9 +48,7 @@ public class Boid : MonoBehaviour
 				cohere (boidController.getFlock ());
 
 				// Point the transform in the direction of it's velocity
-				transform.LookAt (transform.position - body.velocity);
-
-//				seek (commander.GetComponent <Rigidbody> ().transform.position);
+				pointTowardsVelocity ();
 
 //				body.velocity += calcVelocity () * Time.deltaTime;
 
@@ -60,8 +58,6 @@ public class Boid : MonoBehaviour
 //				} else if (body.velocity.magnitude < minVel) {
 //					body.velocity = body.velocity.normalized * minVel;
 //				}
-
-
 			}
 			float waitTime = Random.Range (0.005f, 0.01f);
 			yield return new WaitForSeconds (waitTime);
@@ -130,7 +126,6 @@ public class Boid : MonoBehaviour
 		foreach (GameObject boid in flock) {
 			float d = Vector3.Distance (boid.transform.position, body.position);
 
-
 			if (d > 0 && d < desiredSeparation) {
 				Vector3 diff = body.position - boid.transform.position;
 				diff.Normalize ();// Should we normalize here?
@@ -175,6 +170,11 @@ public class Boid : MonoBehaviour
 			steeringVector = Vector3.ClampMagnitude (steeringVector, maxSteeringForce);
 			body.AddForce (steeringVector);
 		}
+	}
+
+	void pointTowardsVelocity ()
+	{
+		transform.LookAt (transform.position - body.velocity);
 	}
 
 
