@@ -15,7 +15,14 @@ public class Boid : MonoBehaviour
 	private float fleeingDistance;
 	private float desiredSeparation;
 
-	private float desiredCohesion = 100.0f;
+	// Cohesion distance
+	private float desiredCohesion = 50.0f;
+
+	// Max distance for sensing other boids
+	private float maxSensingDistance = 100.0f;
+
+	private float minRandom = 0.0f;
+	private float maxRandom = 20.0f;
 
 	private Rigidbody body;
 
@@ -47,17 +54,23 @@ public class Boid : MonoBehaviour
 				// Cohere to far away boids
 				cohere (boidController.getFlock ());
 
+				// Align with the rest of the flock
+//				align (boidController.getFlock ());
+
+				// Sprinkle a bit of randomness to simulate free will
+				addRandom ();
+
 				// Point the transform in the direction of it's velocity
 				pointTowardsVelocity ();
 
 //				body.velocity += calcVelocity () * Time.deltaTime;
 
 				// Clamp velocity
-//				if (body.velocity.magnitude > maxVel) {
-//					body.velocity = Vector3.ClampMagnitude (body.velocity, maxVel);
-//				} else if (body.velocity.magnitude < minVel) {
-//					body.velocity = body.velocity.normalized * minVel;
-//				}
+				if (body.velocity.magnitude > maxVel) {
+					body.velocity = Vector3.ClampMagnitude (body.velocity, maxVel);
+				} else if (body.velocity.magnitude < minVel) {
+					body.velocity = body.velocity.normalized * minVel;
+				}
 			}
 			float waitTime = Random.Range (0.005f, 0.01f);
 			yield return new WaitForSeconds (waitTime);
@@ -121,7 +134,7 @@ public class Boid : MonoBehaviour
 	private void separate (GameObject[] flock)
 	{
 		Vector3 sum = Vector3.zero;
-		int closeBoids = 0; // Counting the amount of boids within separation distance 
+		int tooCloseBoids = 0; // Counting the amount of boids within separation distance 
 
 		foreach (GameObject boid in flock) {
 			float d = Vector3.Distance (boid.transform.position, body.position);
@@ -132,11 +145,11 @@ public class Boid : MonoBehaviour
 
 				diff /= d; // Separating less with larger distance
 				sum += diff;
-				closeBoids++;
+				tooCloseBoids++;
 			}
 		}
-		if (closeBoids > 0) { // Don't divide with 0
-			sum /= closeBoids;
+		if (tooCloseBoids > 0) { // Don't divide with 0
+			sum /= tooCloseBoids;
 			sum.Normalize ();
 			sum *= maxVel;
 			Vector3 steeringVector = sum - body.velocity;
@@ -145,31 +158,46 @@ public class Boid : MonoBehaviour
 		}
 	}
 
+	// Go towards mass of flock
 	private void cohere (GameObject[] flock)
 	{
 		Vector3 sum = Vector3.zero;
-		int farBoids = 0; // Counting the amount of boids within separation distance 
+		int nearBoids = 0; // Counting the amount of boids within separation distance 
 
 		foreach (GameObject boid in flock) {
 			float d = Vector3.Distance (boid.transform.position, body.position);
 
-			if (d > desiredCohesion) {
+			if (d > desiredCohesion && d < maxSensingDistance) {
 				Vector3 diff = body.position + boid.transform.position;
 				diff.Normalize ();// Should we normalize here?
 
 				diff *= d; // Cohere more with larger distance
 				sum += diff;
-				farBoids++;
+				nearBoids++;
 			}
 		}
-		if (farBoids > 0) { // Don't divide with 0
-			sum /= farBoids;
+		if (nearBoids > 0) { // Don't divide with 0
+			sum /= nearBoids;
 			sum.Normalize ();
 			sum *= maxVel;
 			Vector3 steeringVector = sum - body.velocity;
 			steeringVector = Vector3.ClampMagnitude (steeringVector, maxSteeringForce);
 			body.AddForce (steeringVector);
 		}
+	}
+
+	void align (GameObject[] flock)
+	{
+		
+	}
+
+	void addRandom ()
+	{
+		Vector3 randomVector = new Vector3 (
+			                       Random.Range (minRandom, maxRandom), 
+			                       Random.Range (minRandom, maxRandom), 
+			                       Random.Range (minRandom, maxRandom));
+		body.AddForce (randomVector);
 	}
 
 	void pointTowardsVelocity ()

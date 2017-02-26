@@ -4,14 +4,14 @@ using System.Collections;
 public class BoidController : MonoBehaviour
 {
 
-	private float minVelocity = 5.0f;
-	private float maxVelocity = 20.0f;
+	private float minVelocity = 0.0f;
+	private float maxVelocity = 10.0f;
 	private float maxSteeringForce = 5.0f;
 	private float randomness = 1.0f;
 	private int flockSize = 200;
 	private float slowDownDistance = 10.0f;
 	private float fleeingDistance = 20.0f;
-	private float desiredSeparation = 1.0f;
+	private float desiredSeparation = 2.0f;
 
 	public GameObject prefab;
 	public GameObject commander;
