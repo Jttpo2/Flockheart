@@ -29,6 +29,17 @@ public class Boid : MonoBehaviour
 
 	private Rigidbody body;
 
+
+	// For optimization
+	private Vector3 seekVector;
+	private Vector3 arriveVector;
+	private Vector3 fleeVector;
+	private Vector3 separateVector;
+	private Vector3 cohereVector;
+	private Vector3 alignVector;
+	private Vector3 viewVector;
+	private Vector3 randomVector;
+
 	void Start ()
 	{
 		Random.InitState (System.DateTime.Today.Millisecond);
@@ -43,28 +54,28 @@ public class Boid : MonoBehaviour
 			if (isInitiated) {
 
 				// Steer toward target
-				Vector3 seekVector = seek (commander.transform.position);
+				seekVector = seek (commander.transform.position);
 
 				// Go towards target and slow down if too close
-				Vector3 arriveVector = arrive (commander.transform.position);
+				arriveVector = arrive (commander.transform.position);
 
 				// Flee from antagonist
-				Vector3 fleeVector = flee (commander.transform.position);
+				fleeVector = flee (commander.transform.position);
 
 				// Separate from other close by boids
-				Vector3 separateVector = separate (boidController.getFlock ());
+				separateVector = separate (boidController.getFlock ());
 
 				// Cohere to far away boids
-				Vector3 cohereVector = cohere (boidController.getFlock ());
+				cohereVector = cohere (boidController.getFlock ());
 
 				// Align with the rest of the flock
-				Vector3 alignVector = align (boidController.getFlock ());
+				alignVector = align (boidController.getFlock ());
 
 				// Avoid boids blocking the view (Arrange, or stagger, with closest bird in peripherals. Like a v)
-				Vector3 viewVector = view (boidController.getFlock ());
+				viewVector = view (boidController.getFlock ());
 
 				// Sprinkle a bit of randomness to simulate free will
-				Vector3 randomVector = addRandom ();
+				randomVector = addRandom ();
 
 				seekVector *= 0.4f;
 				arriveVector *= 0.01f;
@@ -153,8 +164,10 @@ public class Boid : MonoBehaviour
 		Vector3 sum = Vector3.zero;
 		int tooCloseBoids = 0; // Counting the amount of boids within separation distance 
 
+		float d = 0;
+
 		foreach (GameObject boid in flock) {
-			float d = Vector3.Distance (boid.transform.position, body.position);
+			d = Vector3.Distance (boid.transform.position, body.position);
 
 			if (d > 0 && d < desiredSeparation) {
 				sum += (body.position - boid.transform.position).normalized / d; // Separating less with larger distance
@@ -178,8 +191,9 @@ public class Boid : MonoBehaviour
 		int nearBoids = 0; // Counting the amount of boids within separation distance 
 		Vector3 sum = Vector3.zero;
 
+		float d = 0;
 		foreach (GameObject boid in flock) {
-			float d = Vector3.Distance (boid.transform.position, body.position);
+			d = Vector3.Distance (boid.transform.position, body.position);
 
 			if (d > desiredCohesion && d < maxSensingDistance) {
 				sum += boid.transform.position;
@@ -199,8 +213,9 @@ public class Boid : MonoBehaviour
 		int nearBoids = 0;
 		Vector3 sum = Vector3.zero;
 
+		float d = 0;
 		foreach (GameObject boid in flock) {
-			float d = Vector3.Distance (boid.transform.position, body.position);
+			d = Vector3.Distance (boid.transform.position, body.position);
 
 			if (d < maxSensingDistance && d > 0) {
 				sum += boid.GetComponent <Rigidbody> ().velocity;
@@ -222,11 +237,11 @@ public class Boid : MonoBehaviour
 	Vector3 view (GameObject[] flock)
 	{
 		int nearBoids = 0;
-
 		Vector3 sum = Vector3.zero;
 
+		float d = 0;
 		foreach (GameObject boid in flock) {
-			float d = Vector3.Distance (boid.transform.position, body.position);
+			d = Vector3.Distance (boid.transform.position, body.position);
 			if (d < maxSensingDistance && isInPeripherals (boid) && d > 0) {
 				sum += boid.transform.position;
 				nearBoids++;
@@ -268,10 +283,8 @@ public class Boid : MonoBehaviour
 
 	Vector3 addRandom ()
 	{
-		return new Vector3 (
-			Random.Range (minRandom, maxRandom), 
-			Random.Range (minRandom, maxRandom), 
-			Random.Range (minRandom, maxRandom));
+		float n = Random.Range (minRandom, maxRandom);
+		return new Vector3 (n, n, n);
 	}
 
 	void pointTowardsVelocity ()
