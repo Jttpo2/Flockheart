@@ -6,6 +6,11 @@ public class RandomMover : MonoBehaviour
 	public GameObject spawnPoint;
 	private Vector3 spawnP;
 
+	public GameObject worldPlane;
+
+	public float spawnInterval = 60.0f;
+	public float minY = -20.0f;
+
 	private float initialVelocity = 0.0f;
 	private float maxVelocity = 100.0f;
 
@@ -35,7 +40,9 @@ public class RandomMover : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
 	{
-
+		if (isOutOfBounds ()) {
+			spawn ();
+		}
 	}
 
 	Vector3 calcRandVector ()
@@ -56,17 +63,28 @@ public class RandomMover : MonoBehaviour
 	{
 		while (true) {
 
-			Vector3 randVector = calcRandVector ();
-			body.position = spawnP + randVector;
-//			body.position = new Vector3 (body.position.x, body.transform.localScale.y * 10.0f, body.position.z);
-//			
-			body.velocity = Vector3.zero;
-			//		body.AddForce (calcRandVector ());
-			//		body.velocity = Vector3.ClampMagnitude (body.velocity, maxVelocity);
+			spawn ();
 
-
-			float waitTime = Random.Range (10.0f, 20.0f);
-			yield return new WaitForSeconds (waitTime);
+			yield return new WaitForSeconds (spawnInterval);
 		}
+	}
+
+	public void spawn ()
+	{
+		Vector3 randVector = calcRandVector ();
+		body.position = spawnP + randVector;
+
+		body.velocity = Vector3.zero;
+	}
+
+	bool isOutOfBounds ()
+	{
+//		Vector3 worldCenterPos = worldPlane.transform.position;
+
+
+		if (body.position.y < minY) {
+			return true;
+		}
+		return false;
 	}
 }
