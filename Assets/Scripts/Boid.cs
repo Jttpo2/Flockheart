@@ -3,6 +3,8 @@ using System.Collections;
 
 public class Boid : MonoBehaviour
 {
+	//	public static int operationCounter = 0;
+
 	//	private GameObject controllerGameObject;
 	private BoidController boidController;
 	private bool isInitiated = false;
@@ -176,6 +178,8 @@ public class Boid : MonoBehaviour
 		float d = 0;
 
 		foreach (GameObject boid in flock) {
+//			operationCounter++;
+
 			d = Vector3.Distance (boid.transform.position, body.position);
 
 			if (d > maxSensingDistance || d == 0) {

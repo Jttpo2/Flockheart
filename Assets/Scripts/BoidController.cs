@@ -11,7 +11,7 @@ public class BoidController : MonoBehaviour
 	private float maxVelocity = 30.0f;
 	private float maxSteeringForce = 10.0f;
 	private float randomness = 1.0f;
-	private int flockSize = 180;
+	private int flockSize = 190;
 	private float slowDownDistance = 10.0f;
 	private float fleeingDistance = 20.0f;
 	private float desiredSeparation = 5.0f;
@@ -28,6 +28,12 @@ public class BoidController : MonoBehaviour
 	private float originBoxY;
 	private float originBoxZ;
 
+	// Framerate calculations
+	int m_frameCounter = 0;
+	float m_timeCounter = 0.0f;
+	float m_lastFramerate = 0.0f;
+	public float m_refreshTime = 5.0f;
+
 	void Start ()
 	{
 		populateBoids ();
@@ -38,11 +44,16 @@ public class BoidController : MonoBehaviour
 		calcFlockCenter ();
 	}
 
+	void LateUpdate ()
+	{
+//		calcFrameRate ();
+//		Boid.operationCounter = 0;
+	}
+
 	void populateBoids ()
 	{
 		spawnPoint = spawnPointObject.transform.position;
 		spawnPoint.y += 10;
-
 
 		originBoxX = 40;
 		originBoxY = 40;
@@ -80,6 +91,21 @@ public class BoidController : MonoBehaviour
 
 		flockCenter /= flockSize;
 		//		flockVelocity = theVelocity / flockSize;
+	}
+
+	void calcFrameRate ()
+	{
+		if (m_timeCounter < m_refreshTime) {
+			m_timeCounter += Time.deltaTime;
+			m_frameCounter++;
+		} else {
+			//This code will break if you set your m_refreshTime to 0, which makes no sense.
+			m_lastFramerate = (float)m_frameCounter / m_timeCounter;
+			m_frameCounter = 0;
+			m_timeCounter = 0.0f;
+
+//			Debug.Log (Mathf.Floor (Boid.operationCounter / m_lastFramerate));
+		}
 	}
 
 	public float getMinVelocity ()
