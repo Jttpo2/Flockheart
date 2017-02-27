@@ -4,6 +4,9 @@ using System.Collections;
 public class BoidController : MonoBehaviour
 {
 
+	public GameObject spawnPointObject;
+	private Vector3 spawnPoint;
+
 	private float minVelocity = 0.0f;
 	private float maxVelocity = 30.0f;
 	private float maxSteeringForce = 10.0f;
@@ -21,18 +24,25 @@ public class BoidController : MonoBehaviour
 
 	private GameObject[] boids;
 
-	private float originBoxX = 10;
-	private float originBoxY = 10;
-	private float originBoxZ = 10;
+	private float originBoxX;
+	private float originBoxY;
+	private float originBoxZ;
 
 	void Start ()
 	{
+		spawnPoint = spawnPointObject.transform.position;
+
+		originBoxX = 10;
+		originBoxY = 10;
+		originBoxZ = 10;
+
 		boids = new GameObject[flockSize];
 		for (int i = 0; i < flockSize; i++) {
 			Vector3 position = new Vector3 (
 				                   Random.value * originBoxX,
 				                   Random.value * originBoxY,
 				                   Random.value * originBoxZ);
+			position += spawnPoint;
 
 			GameObject boid = Instantiate (prefab, this.transform.position, this.transform.rotation) as GameObject;
 			boid.transform.parent = this.transform;
