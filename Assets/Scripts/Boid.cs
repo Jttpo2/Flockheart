@@ -162,12 +162,18 @@ public class Boid : MonoBehaviour
 		return Vector3.ClampMagnitude (desired, maxSteeringForce);
 	}
 
+	Vector3 separationSum = Vector3.zero;
+	Vector3 cohesionSum = Vector3.zero;
+	Vector3 alignmentSum = Vector3.zero;
+	Vector3 viewSum = Vector3.zero;
+	Vector3 ortho = Vector3.zero;
+
 	private Vector3 flock (GameObject[] flock)
 	{
-		Vector3 separationSum = Vector3.zero;
-		Vector3 cohesionSum = Vector3.zero;
-		Vector3 alignmentSum = Vector3.zero;
-		Vector3 viewSum = Vector3.zero;
+		separationSum = Vector3.zero;
+		cohesionSum = Vector3.zero;
+		alignmentSum = Vector3.zero;
+		viewSum = Vector3.zero;
 
 		int tooClose = 0; // Counting the amount of boids within separation distance 
 		int nearEnoughToCohere = 0; // Counting the amount of boids within cohesion distance 
@@ -233,7 +239,7 @@ public class Boid : MonoBehaviour
 		if (inPeripherals > 0) {
 			// Get vector orthogonal to diff and down
 			viewSum /= inPeripherals;
-			Vector3 ortho = Vector3.Cross (viewSum - body.position, Vector3.down);
+			ortho = Vector3.Cross (viewSum - body.position, Vector3.down);
 
 			// Make sure the ortogonal vector points in the general direction of the boids velocity
 			if (Vector3.Dot (body.velocity, ortho) < 0) {

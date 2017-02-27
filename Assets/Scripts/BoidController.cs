@@ -11,7 +11,7 @@ public class BoidController : MonoBehaviour
 	private float maxVelocity = 30.0f;
 	private float maxSteeringForce = 10.0f;
 	private float randomness = 1.0f;
-	private int flockSize = 200;
+	private int flockSize = 180;
 	private float slowDownDistance = 10.0f;
 	private float fleeingDistance = 20.0f;
 	private float desiredSeparation = 5.0f;
@@ -52,17 +52,18 @@ public class BoidController : MonoBehaviour
 		}
 	}
 
+
 	void Update ()
 	{
-		Vector3 theCenter = Vector3.zero;
+		flockCenter = Vector3.zero;
 //		Vector3 theVelocity = Vector3.zero;
 
 		foreach (GameObject boid in boids) {
-			theCenter += boid.transform.localPosition;
+			flockCenter += boid.transform.localPosition;
 //			theVelocity += boid.GetComponent <Rigidbody> ().velocity;
 		}
 
-		flockCenter = theCenter / flockSize;
+		flockCenter /= flockSize;
 //		flockVelocity = theVelocity / flockSize;
 	}
 
