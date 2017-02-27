@@ -30,11 +30,23 @@ public class BoidController : MonoBehaviour
 
 	void Start ()
 	{
-		spawnPoint = spawnPointObject.transform.position;
+		populateBoids ();
+	}
 
-		originBoxX = 10;
-		originBoxY = 10;
-		originBoxZ = 10;
+	void Update ()
+	{
+		calcFlockCenter ();
+	}
+
+	void populateBoids ()
+	{
+		spawnPoint = spawnPointObject.transform.position;
+		spawnPoint.y += 10;
+
+
+		originBoxX = 40;
+		originBoxY = 40;
+		originBoxZ = 40;
 
 		boids = new GameObject[flockSize];
 		for (int i = 0; i < flockSize; i++) {
@@ -43,28 +55,31 @@ public class BoidController : MonoBehaviour
 				                   Random.value * originBoxY,
 				                   Random.value * originBoxZ);
 			position += spawnPoint;
-
-			GameObject boid = Instantiate (prefab, this.transform.position, this.transform.rotation) as GameObject;
-			boid.transform.parent = this.transform;
-			boid.transform.localPosition = position;
-			boid.GetComponent <Boid> ().setController (this.gameObject);
-			boids [i] = boid;
+			addBoid (position, i);
 		}
 	}
 
+	void addBoid (Vector3 position, int arrayIndex)
+	{
+		GameObject boid = Instantiate (prefab, this.transform.position, this.transform.rotation) as GameObject;
+		boid.transform.parent = this.transform;
+		boid.transform.localPosition = position;
+		boid.GetComponent <Boid> ().setController (this.gameObject);
+		boids [arrayIndex] = boid;
+	}
 
-	void Update ()
+	private void calcFlockCenter ()
 	{
 		flockCenter = Vector3.zero;
-//		Vector3 theVelocity = Vector3.zero;
+		//		Vector3 theVelocity = Vector3.zero;
 
 		foreach (GameObject boid in boids) {
 			flockCenter += boid.transform.localPosition;
-//			theVelocity += boid.GetComponent <Rigidbody> ().velocity;
+			//			theVelocity += boid.GetComponent <Rigidbody> ().velocity;
 		}
 
 		flockCenter /= flockSize;
-//		flockVelocity = theVelocity / flockSize;
+		//		flockVelocity = theVelocity / flockSize;
 	}
 
 	public float getMinVelocity ()
