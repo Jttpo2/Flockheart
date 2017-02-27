@@ -19,7 +19,7 @@ public class Boid : MonoBehaviour
 	private float desiredCohesion = 50.0f;
 
 	// Max distance for sensing other boids
-	private float maxSensingDistance = 100.0f;
+	private float maxSensingDistance = 50.0f;
 
 	private float minRandom = 0.0f;
 	private float maxRandom = 10.0f;
@@ -56,16 +56,20 @@ public class Boid : MonoBehaviour
 //
 //				// Align with the rest of the flock
 				Vector3 alignVector = align (boidController.getFlock ());
-//
+
+				// Avoid boids blocking the view (Arrange, or stagger, with closest bird in peripherals. Like a v)
+				Vector3 viewVector = view (boidController.getFlock ());
+
 //				// Sprinkle a bit of randomness to simulate free will
 				Vector3 randomVector = addRandom ();
 //
-				seekVector *= 0.2f;
+				seekVector *= 0.4f;
 				arriveVector *= 0.01f;
 				fleeVector *= 0.0f;
 				separateVector *= 0.2f;
 				cohereVector *= 0.1f;
-				alignVector *= 0.01f;
+				alignVector *= 0.02f;
+				viewVector *= 0.1f;
 				randomVector *= 0.05f;
 
 				body.AddForce (seekVector);
@@ -74,6 +78,7 @@ public class Boid : MonoBehaviour
 				body.AddForce (separateVector);
 				body.AddForce (cohereVector);
 				body.AddForce (alignVector);
+				body.AddForce (viewVector);
 				body.AddForce (randomVector);
 //
 				// Point the transform in the direction of it's velocity
@@ -205,6 +210,7 @@ public class Boid : MonoBehaviour
 		Vector3 sum = Vector3.zero;
 		foreach (GameObject boid in flock) {
 			float d = Vector3.Distance (boid.transform.position, body.position);
+
 			if (d > 0 && d < maxSensingDistance) {
 				sum += boid.GetComponent <Rigidbody> ().velocity;
 				nearBoids++;
@@ -223,6 +229,65 @@ public class Boid : MonoBehaviour
 		return steeringVector;
 	}
 
+	// Avoid boids blocking the view (Stagger relative to the boids in your peripherals (in front of you))
+	Vector3 view (GameObject[] flock)
+	{
+		int nearBoids = 0;
+
+//		GameObject closestBoid = null;
+//		float distanceToClosest = float.MaxValue;
+//		Vector3 placeToAvoid = Vector3.zero;
+
+		Vector3 sum = Vector3.zero;
+
+		foreach (GameObject boid in flock) {
+			float d = Vector3.Distance (boid.transform.position, body.position);
+			if (d < maxSensingDistance && isInPeripherals (boid) && d > 0) {
+				sum += (boid.transform.position - body.position) / d;
+
+				//				closestBoid = boid;
+//				distanceToClosest = d;
+			}	
+		}
+
+//		if (closestBoid != null) {
+//			placeToAvoid = closestBoid.transform.position;
+//		}
+
+		// Get vector orthogonal to diff and down
+		Vector3 diff = sum - body.position;
+		Vector3 ortho = Vector3.Cross (sum, Vector3.down);
+
+		// Make sure the ortogonal vector points in the general direction of the boids velocity
+		if (Vector3.Dot (body.velocity, ortho) < 0) {
+			ortho *= -1;
+		}
+
+		ortho.Normalize ();
+		ortho *= maxVel;
+		ortho -= body.velocity;
+		ortho = Vector3.ClampMagnitude (ortho, maxSteeringForce);
+
+		// Debug peripheral vision
+//		if (closestBoid != nu	ll) {
+//			Debug.DrawLine (body.position, closestBoid.transform.position);	
+//		} else {
+//			Debug.DrawRay (body.position, body.velocity, Color.green);
+//		}
+
+		return ortho;
+
+	}
+
+
+	int peripheralVisionDegrees = 45;
+
+	bool isInPeripherals (GameObject boid)
+	{
+		Vector3 diff = boid.transform.position - body.position;
+		return Vector3.Angle (body.velocity, diff) < peripheralVisionDegrees;
+	}
+
 	Vector3 addRandom ()
 	{
 		Vector3 randomVector = new Vector3 (
@@ -236,8 +301,6 @@ public class Boid : MonoBehaviour
 	{
 		transform.LookAt (transform.position - body.velocity);
 	}
-
-
 
 	// Map between number ranges
 	public static float map (float s, float a1, float a2, float b1, float b2)
