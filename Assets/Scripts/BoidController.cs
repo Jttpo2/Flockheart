@@ -17,7 +17,7 @@ public class BoidController : MonoBehaviour
 	public GameObject commander;
 
 	private Vector3 flockCenter;
-	private Vector3 flockVelocity;
+	//	private Vector3 flockVelocity;
 
 	private GameObject[] boids;
 
@@ -45,15 +45,15 @@ public class BoidController : MonoBehaviour
 	void Update ()
 	{
 		Vector3 theCenter = Vector3.zero;
-		Vector3 theVelocity = Vector3.zero;
+//		Vector3 theVelocity = Vector3.zero;
 
 		foreach (GameObject boid in boids) {
 			theCenter += boid.transform.localPosition;
-			theVelocity += boid.GetComponent <Rigidbody> ().velocity;
+//			theVelocity += boid.GetComponent <Rigidbody> ().velocity;
 		}
 
 		flockCenter = theCenter / flockSize;
-		flockVelocity = theVelocity / flockSize;
+//		flockVelocity = theVelocity / flockSize;
 	}
 
 	public float getMinVelocity ()
@@ -81,10 +81,10 @@ public class BoidController : MonoBehaviour
 		return flockCenter;
 	}
 
-	public Vector3 getFlockVelocity ()
-	{
-		return flockVelocity;
-	}
+	//	public Vector3 getFlockVelocity ()
+	//	{
+	//		return flockVelocity;
+	//	}
 
 	public float getSlowdownDistance ()
 	{
