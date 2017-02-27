@@ -8,6 +8,7 @@ public class Boid : MonoBehaviour
 	private bool isInitiated = false;
 	private float minVel;
 	private float maxVel;
+	private float maxVelSqrd;
 	private float maxSteeringForce;
 	private float randomness;
 	private GameObject commander;
@@ -90,7 +91,7 @@ public class Boid : MonoBehaviour
 				pointTowardsVelocity ();
 
 				// Clamp velocity
-				if (body.velocity.magnitude > maxVel) {
+				if (body.velocity.sqrMagnitude > maxVelSqrd) {
 					body.velocity = Vector3.ClampMagnitude (body.velocity, maxVel);
 				} //else if (body.velocity.magnitude < minVel) {
 //					body.velocity = body.velocity.normalized * minVel;
@@ -101,10 +102,12 @@ public class Boid : MonoBehaviour
 		}
 	}
 
+	Vector3 desired = Vector3.zero;
+
 	// Steer toward target
 	private Vector3 seek (Vector3 targetPosition)
 	{
-		Vector3 desired = targetPosition - body.transform.position;
+		desired = targetPosition - body.transform.position;
 		desired.Normalize ();
 		desired *= maxVel;
 
@@ -115,7 +118,7 @@ public class Boid : MonoBehaviour
 	// Move away from antagonist
 	private Vector3 flee (Vector3 antagonist)
 	{
-		Vector3 desired = (antagonist * -1) - body.transform.position;
+		desired = (antagonist * -1) - body.transform.position;
 		float distance = desired.magnitude;
 
 		desired.Normalize ();
@@ -131,10 +134,12 @@ public class Boid : MonoBehaviour
 		return Vector3.ClampMagnitude (desired, maxSteeringForce);
 	}
 
+
+
 	// Go towards target and slow down if too close
 	private Vector3 arrive (Vector3 target)
 	{
-		Vector3 desired = target - body.transform.position;
+		desired = target - body.transform.position;
 		float distance = desired.magnitude;
 
 		desired.Normalize ();
@@ -274,6 +279,7 @@ public class Boid : MonoBehaviour
 		boidController = controller.GetComponent <BoidController> ();
 		minVel = boidController.getMinVelocity ();
 		maxVel = boidController.getMaxVelocity ();
+		maxVelSqrd = maxVel * maxVel;
 		maxSteeringForce = boidController.getMaxSteeringForce ();
 		randomness = boidController.getRandomness ();
 		slowDownDistance = boidController.getSlowdownDistance ();
