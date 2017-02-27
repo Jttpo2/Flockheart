@@ -61,18 +61,21 @@ public class Boid : MonoBehaviour
 
 				// Flee from antagonist
 				fleeVector = flee (commander.transform.position);
-
-				// Separate from other close by boids
-				separateVector = separate (boidController.getFlock ());
-
-				// Cohere to far away boids
-				cohereVector = cohere (boidController.getFlock ());
-
-				// Align with the rest of the flock
-				alignVector = align (boidController.getFlock ());
-
-				// Avoid boids blocking the view (Arrange, or stagger, with closest bird in peripherals. Like a v)
-				viewVector = view (boidController.getFlock ());
+		
+				// Conglomerated flocking behaviour (Separate, Cohere, Align and View)
+				flock (boidController.getFlock ());
+//
+//				// Separate from other close by boids
+//				separateVector = separate (boidController.getFlock ());
+//
+//				// Cohere to far away boids
+//				cohereVector = cohere (boidController.getFlock ());
+//
+//				// Align with the rest of the flock
+//				alignVector = align (boidController.getFlock ());
+//
+//				// Avoid boids blocking the view (Arrange, or stagger, with closest bird in peripherals. Like a v)
+//				viewVector = view (boidController.getFlock ());
 
 				// Sprinkle a bit of randomness to simulate free will
 				randomVector = addRandom ();
@@ -159,122 +162,208 @@ public class Boid : MonoBehaviour
 		return Vector3.ClampMagnitude (desired, maxSteeringForce);
 	}
 
-	private Vector3 separate (GameObject[] flock)
+	private Vector3 flock (GameObject[] flock)
 	{
-		Vector3 sum = Vector3.zero;
-		int tooCloseBoids = 0; // Counting the amount of boids within separation distance 
+		Vector3 separationSum = Vector3.zero;
+		Vector3 cohesionSum = Vector3.zero;
+		Vector3 alignmentSum = Vector3.zero;
+		Vector3 viewSum = Vector3.zero;
+
+		int tooClose = 0; // Counting the amount of boids within separation distance 
+		int nearEnoughToCohere = 0; // Counting the amount of boids within cohesion distance 
+		int nearEnoughToAlign = 0;
+		int inPeripherals = 0;
 
 		float d = 0;
 
 		foreach (GameObject boid in flock) {
 			d = Vector3.Distance (boid.transform.position, body.position);
 
-			if (d > 0 && d < desiredSeparation) {
-				sum += (body.position - boid.transform.position).normalized / d; // Separating less with larger distance
-				tooCloseBoids++;
+			if (d > maxSensingDistance || d == 0) {
+				continue;
 			}
-		}
-
-		if (tooCloseBoids > 0) { // Don't divide with 0
-			sum /= tooCloseBoids;
-			sum.Normalize ();
-			sum *= maxVel;
-			sum -= body.velocity;
-			return Vector3.ClampMagnitude (sum, maxSteeringForce);
-		}
-		return Vector3.zero;
-	}
-
-	// Go towards mass of flock
-	private Vector3 cohere (GameObject[] flock)
-	{
-		int nearBoids = 0; // Counting the amount of boids within separation distance 
-		Vector3 sum = Vector3.zero;
-
-		float d = 0;
-		foreach (GameObject boid in flock) {
-			d = Vector3.Distance (boid.transform.position, body.position);
-
-			if (d > desiredCohesion && d < maxSensingDistance) {
-				sum += boid.transform.position;
-				nearBoids++;
+			// Separation
+			if (d < desiredSeparation) {
+				separationSum += (body.position - boid.transform.position).normalized / d; // Separating less with larger distance
+				tooClose++;
 			}
-		}
-	
-		if (nearBoids > 0) { // Don't divide with 0
-			sum /= nearBoids;
-			return seek (sum);
-		}
-		return Vector3.zero;
-	}
 
-	Vector3 align (GameObject[] flock)
-	{
-		int nearBoids = 0;
-		Vector3 sum = Vector3.zero;
-
-		float d = 0;
-		foreach (GameObject boid in flock) {
-			d = Vector3.Distance (boid.transform.position, body.position);
-
-			if (d < maxSensingDistance && d > 0) {
-				sum += boid.GetComponent <Rigidbody> ().velocity;
-				nearBoids++;
+			// Cohesion
+			if (d > desiredCohesion) {
+				cohesionSum += boid.transform.position;
+				nearEnoughToCohere++;
 			}
-		}
 
-		if (nearBoids > 0) {
-			sum /= nearBoids;
-			sum.Normalize ();
-			sum *= maxVel;
-			sum -= body.velocity;
-			return Vector3.ClampMagnitude (sum, maxSteeringForce);
-		}
-		return Vector3.zero;
-	}
+			// Alignment
+			alignmentSum += boid.GetComponent <Rigidbody> ().velocity;
+			nearEnoughToAlign++;
 
-	// Avoid boids blocking the view (Stagger relative to the boids in your peripherals (in front of you))
-	Vector3 view (GameObject[] flock)
-	{
-		int nearBoids = 0;
-		Vector3 sum = Vector3.zero;
-
-		float d = 0;
-		foreach (GameObject boid in flock) {
-			d = Vector3.Distance (boid.transform.position, body.position);
-			if (d < maxSensingDistance && isInPeripherals (boid) && d > 0) {
-				sum += boid.transform.position;
-				nearBoids++;
+			// View
+			if (isInPeripherals (boid)) {
+				viewSum += boid.transform.position;
+				inPeripherals++;
 			}	
 		}
 
-		if (nearBoids > 0) {
+		// Separation
+		if (tooClose > 0) { // Don't divide with 0
+			separationSum /= tooClose;
+			separationSum.Normalize ();
+			separationSum *= maxVel;
+			separationSum -= body.velocity;
+			separateVector = Vector3.ClampMagnitude (separationSum, maxSteeringForce);
+		}
+
+		// Cohesion
+		if (nearEnoughToCohere > 0) { // Don't divide with 0
+			cohesionSum /= nearEnoughToCohere;
+			cohereVector = seek (cohesionSum);
+		}
+
+		// Alignment
+		if (nearEnoughToAlign > 0) {
+			alignmentSum /= nearEnoughToAlign;
+			alignmentSum.Normalize ();
+			alignmentSum *= maxVel;
+			alignmentSum -= body.velocity;
+			alignVector = Vector3.ClampMagnitude (alignmentSum, maxSteeringForce);
+		}
+
+		// View
+		if (inPeripherals > 0) {
 			// Get vector orthogonal to diff and down
-			Vector3 diff = sum / nearBoids - body.position;
-			Vector3 ortho = Vector3.Cross (diff, Vector3.down);
+			viewSum /= inPeripherals;
+			Vector3 ortho = Vector3.Cross (viewSum - body.position, Vector3.down);
 
 			// Make sure the ortogonal vector points in the general direction of the boids velocity
 			if (Vector3.Dot (body.velocity, ortho) < 0) {
 				ortho *= -1;
 			}
-//			Debug.DrawLine (body.position, sum / nearBoids, Color.cyan);
-//			Debug.DrawRay (body.position, diff, Color.magenta);
-
+		
 			ortho.Normalize ();
 			ortho *= maxVel;
 			ortho -= body.velocity;
-			return Vector3.ClampMagnitude (ortho, maxSteeringForce);
-		} else {
-			return Vector3.zero;
+			viewVector = Vector3.ClampMagnitude (ortho, maxSteeringForce);
 		}
-
-		// Debug peripheral vision
-//		if (closestBoid != nu	ll) {
-//			Debug.DrawLine (body.position, closestBoid.transform.position);	
-//		} else {
-//			Debug.DrawRay (body.position, body.velocity, Color.green);
-//		}
+		return Vector3.zero;
 	}
+
+	//	private Vector3 separate (GameObject[] flock)
+	//	{
+	//		Vector3 sum = Vector3.zero;
+	//		int tooCloseBoids = 0; // Counting the amount of boids within separation distance
+	//
+	//		float d = 0;
+	//
+	//		foreach (GameObject boid in flock) {
+	//			d = Vector3.Distance (boid.transform.position, body.position);
+	//
+	//			if (d > 0 && d < desiredSeparation) {
+	//				sum += (body.position - boid.transform.position).normalized / d; // Separating less with larger distance
+	//				tooCloseBoids++;
+	//			}
+	//		}
+	//
+	//		if (tooCloseBoids > 0) { // Don't divide with 0
+	//			sum /= tooCloseBoids;
+	//			sum.Normalize ();
+	//			sum *= maxVel;
+	//			sum -= body.velocity;
+	//			return Vector3.ClampMagnitude (sum, maxSteeringForce);
+	//		}
+	//		return Vector3.zero;
+	//	}
+	//
+	//	// Go towards mass of flock
+	//	private Vector3 cohere (GameObject[] flock)
+	//	{
+	//		int nearBoids = 0; // Counting the amount of boids within cohesion distance
+	//		Vector3 sum = Vector3.zero;
+	//
+	//		float d = 0;
+	//		foreach (GameObject boid in flock) {
+	//			d = Vector3.Distance (boid.transform.position, body.position);
+	//
+	//			if (d > desiredCohesion && d < maxSensingDistance) {
+	//				sum += boid.transform.position;
+	//				nearBoids++;
+	//			}
+	//		}
+	//
+	//		if (nearBoids > 0) { // Don't divide with 0
+	//			sum /= nearBoids;
+	//			return seek (sum);
+	//		}
+	//		return Vector3.zero;
+	//	}
+	//
+	//	Vector3 align (GameObject[] flock)
+	//	{
+	//		int nearBoids = 0;
+	//		Vector3 sum = Vector3.zero;
+	//
+	//		float d = 0;
+	//		foreach (GameObject boid in flock) {
+	//			d = Vector3.Distance (boid.transform.position, body.position);
+	//
+	//			if (d < maxSensingDistance && d > 0) {
+	//				sum += boid.GetComponent <Rigidbody> ().velocity;
+	//				nearBoids++;
+	//			}
+	//		}
+	//
+	//		if (nearBoids > 0) {
+	//			sum /= nearBoids;
+	//			sum.Normalize ();
+	//			sum *= maxVel;
+	//			sum -= body.velocity;
+	//			return Vector3.ClampMagnitude (sum, maxSteeringForce);
+	//		}
+	//		return Vector3.zero;
+	//	}
+	//
+	//	// Avoid boids blocking the view (Stagger relative to the boids in your peripherals (in front of you))
+	//	Vector3 view (GameObject[] flock)
+	//	{
+	//		int nearBoids = 0;
+	//		Vector3 sum = Vector3.zero;
+	//
+	//		float d = 0;
+	//		foreach (GameObject boid in flock) {
+	//			d = Vector3.Distance (boid.transform.position, body.position);
+	//			if (d < maxSensingDistance && isInPeripherals (boid) && d > 0) {
+	//				sum += boid.transform.position;
+	//				nearBoids++;
+	//			}
+	//		}
+	//
+	//		if (nearBoids > 0) {
+	//			// Get vector orthogonal to diff and down
+	//			Vector3 diff = sum / nearBoids - body.position;
+	//			Vector3 ortho = Vector3.Cross (diff, Vector3.down);
+	//
+	//			// Make sure the ortogonal vector points in the general direction of the boids velocity
+	//			if (Vector3.Dot (body.velocity, ortho) < 0) {
+	//				ortho *= -1;
+	//			}
+	////			Debug.DrawLine (body.position, sum / nearBoids, Color.cyan);
+	////			Debug.DrawRay (body.position, diff, Color.magenta);
+	//
+	//			ortho.Normalize ();
+	//			ortho *= maxVel;
+	//			ortho -= body.velocity;
+	//			return Vector3.ClampMagnitude (ortho, maxSteeringForce);
+	//		} else {
+	//			return Vector3.zero;
+	//		}
+	//
+	//		// Debug peripheral vision
+	////		if (closestBoid != nu	ll) {
+	////			Debug.DrawLine (body.position, closestBoid.transform.position);	
+	////		} else {
+	////			Debug.DrawRay (body.position, body.velocity, Color.green);
+	////		}
+	//	}
 
 	bool isInPeripherals (GameObject boid)
 	{
