@@ -8,7 +8,7 @@ public class BoidController : MonoBehaviour
 	private float maxVelocity = 30.0f;
 	private float maxSteeringForce = 10.0f;
 	private float randomness = 1.0f;
-	private int flockSize = 50;
+	private int flockSize = 200;
 	private float slowDownDistance = 10.0f;
 	private float fleeingDistance = 20.0f;
 	private float desiredSeparation = 2.0f;

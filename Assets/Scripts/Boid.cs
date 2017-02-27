@@ -257,7 +257,7 @@ public class Boid : MonoBehaviour
 			ortho.Normalize ();
 			ortho *= maxVel;
 			ortho -= body.velocity;
-			return ortho = Vector3.ClampMagnitude (ortho, maxSteeringForce);
+			return Vector3.ClampMagnitude (ortho, maxSteeringForce);
 		} else {
 			return Vector3.zero;
 		}
@@ -272,17 +272,15 @@ public class Boid : MonoBehaviour
 
 	bool isInPeripherals (GameObject boid)
 	{
-		Vector3 diff = boid.transform.position - body.position;
-		return Vector3.Angle (body.velocity, diff) < peripheralVisionDegrees;
+		return Vector3.Angle (body.velocity, boid.transform.position - body.position) < peripheralVisionDegrees;
 	}
 
 	Vector3 addRandom ()
 	{
-		Vector3 randomVector = new Vector3 (
-			                       Random.Range (minRandom, maxRandom), 
-			                       Random.Range (minRandom, maxRandom), 
-			                       Random.Range (minRandom, maxRandom));
-		return randomVector;
+		return new Vector3 (
+			Random.Range (minRandom, maxRandom), 
+			Random.Range (minRandom, maxRandom), 
+			Random.Range (minRandom, maxRandom));
 	}
 
 	void pointTowardsVelocity ()
