@@ -74,7 +74,7 @@ public class Boid : MonoBehaviour
 				seekVector *= 0.6f;
 				arriveVector *= 0.01f;
 				fleeVector *= 0.0f;
-				separateVector *= 0.2f;
+				separateVector *= 0.5f;
 				cohereVector *= 0.4f;
 				alignVector *= 0.04f;
 				viewVector *= 0.05f;
