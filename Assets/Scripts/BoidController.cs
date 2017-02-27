@@ -11,7 +11,7 @@ public class BoidController : MonoBehaviour
 	private int flockSize = 200;
 	private float slowDownDistance = 10.0f;
 	private float fleeingDistance = 20.0f;
-	private float desiredSeparation = 2.0f;
+	private float desiredSeparation = 5.0f;
 
 	public GameObject prefab;
 	public GameObject commander;

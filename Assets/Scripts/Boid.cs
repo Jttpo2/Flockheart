@@ -16,7 +16,7 @@ public class Boid : MonoBehaviour
 	private float desiredSeparation;
 
 	// Cohesion distance
-	private float desiredCohesion = 50.0f;
+	private float desiredCohesion = 20.0f;
 
 	// Max distance for sensing other boids
 	private float maxSensingDistance = 100.0f;
@@ -70,7 +70,7 @@ public class Boid : MonoBehaviour
 				arriveVector *= 0.01f;
 				fleeVector *= 0.0f;
 				separateVector *= 0.2f;
-				cohereVector *= 0.5f;
+				cohereVector *= 0.4f;
 				alignVector *= 0.02f;
 				viewVector *= 0.05f;
 				randomVector *= 0.05f;
@@ -138,8 +138,7 @@ public class Boid : MonoBehaviour
 		desired.Normalize ();
 
 		if (distance < slowDownDistance) {
-			float m = map (distance, 0, slowDownDistance, 0, maxVel); // Map to max velocity
-			desired *= m;
+			desired *= map (distance, 0, slowDownDistance, 0, maxVel); // Map to max velocity
 		} else {
 			// Continue at max velocity
 			desired *= maxVel;
@@ -158,11 +157,7 @@ public class Boid : MonoBehaviour
 			float d = Vector3.Distance (boid.transform.position, body.position);
 
 			if (d > 0 && d < desiredSeparation) {
-				Vector3 diff = body.position - boid.transform.position;
-				diff.Normalize ();// Should we normalize here?
-
-				diff /= d; // Separating less with larger distance
-				sum += diff;
+				sum += (body.position - boid.transform.position).normalized / d; // Separating less with larger distance
 				tooCloseBoids++;
 			}
 		}
@@ -180,18 +175,14 @@ public class Boid : MonoBehaviour
 	// Go towards mass of flock
 	private Vector3 cohere (GameObject[] flock)
 	{
-		Vector3 sum = Vector3.zero;
 		int nearBoids = 0; // Counting the amount of boids within separation distance 
+		Vector3 sum = Vector3.zero;
 
 		foreach (GameObject boid in flock) {
 			float d = Vector3.Distance (boid.transform.position, body.position);
 
 			if (d > desiredCohesion && d < maxSensingDistance) {
-				Vector3 diff = body.position + boid.transform.position;
-				diff.Normalize ();// Should we normalize here?
-
-				diff *= d; // Cohere more with larger distance
-				sum += diff;
+				sum += boid.transform.position;
 				nearBoids++;
 			}
 		}
@@ -206,12 +197,12 @@ public class Boid : MonoBehaviour
 	Vector3 align (GameObject[] flock)
 	{
 		int nearBoids = 0;
-
 		Vector3 sum = Vector3.zero;
+
 		foreach (GameObject boid in flock) {
 			float d = Vector3.Distance (boid.transform.position, body.position);
 
-			if (d > 0 && d < maxSensingDistance) {
+			if (d < maxSensingDistance && d > 0) {
 				sum += boid.GetComponent <Rigidbody> ().velocity;
 				nearBoids++;
 			}
