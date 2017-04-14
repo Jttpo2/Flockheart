@@ -13,6 +13,7 @@ public class BoidWatcher : MonoBehaviour
 	private bool isPanning;
 
 	private float rotationSpeedX = 0.2f;
+	private float rotationSpeedY = 0.2f;
 
 	void Start ()
 	{
@@ -42,6 +43,8 @@ public class BoidWatcher : MonoBehaviour
 			Vector3 mouseDelta = Input.mousePosition - prevMousePos;
 			rotateAroundFlock (mouseDelta.x * rotationSpeedX);
 
+			panUpAndDown (mouseDelta.y * rotationSpeedY);
+
 			// Update offset
 			offset = targetPos - transform.position;
 
@@ -53,5 +56,10 @@ public class BoidWatcher : MonoBehaviour
 
 	void rotateAroundFlock(float degrees) {
 		transform.RotateAround (targetPos, Vector3.up, degrees);
+	}
+
+	void panUpAndDown(float degrees) {
+		Vector3 horizontalAndPerpendicularToCamView = Vector3.Cross(targetPos - transform.position, Vector3.up);
+		transform.RotateAround (targetPos, horizontalAndPerpendicularToCamView, degrees);
 	}
 }
