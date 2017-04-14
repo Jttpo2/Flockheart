@@ -3,11 +3,14 @@ using System.Collections;
 
 public class Boid : MonoBehaviour
 {
+	//	public static int operationCounter = 0;
+
 	//	private GameObject controllerGameObject;
 	private BoidController boidController;
 	private bool isInitiated = false;
 	private float minVel;
 	private float maxVel;
+	private float maxVelSqrd;
 	private float maxSteeringForce;
 	private float randomness;
 	private GameObject commander;
@@ -16,15 +19,29 @@ public class Boid : MonoBehaviour
 	private float desiredSeparation;
 
 	// Cohesion distance
-	private float desiredCohesion = 50.0f;
+	private float desiredCohesion = 20.0f;
 
 	// Max distance for sensing other boids
-	private float maxSensingDistance = 50.0f;
+	private float maxSensingDistance = 100.0f;
+
+	// Deegrees of perigheral vision, on both sides of velocity center line
+	int peripheralVisionDegrees = 45;
 
 	private float minRandom = 0.0f;
 	private float maxRandom = 10.0f;
 
 	private Rigidbody body;
+
+
+	// For optimization
+	private Vector3 seekVector;
+	private Vector3 arriveVector;
+	private Vector3 fleeVector;
+	private Vector3 separateVector;
+	private Vector3 cohereVector;
+	private Vector3 alignVector;
+	private Vector3 viewVector;
+	private Vector3 randomVector;
 
 	void Start ()
 	{
@@ -40,36 +57,27 @@ public class Boid : MonoBehaviour
 			if (isInitiated) {
 
 				// Steer toward target
-				Vector3 seekVector = seek (commander.transform.position);
+				seekVector = seek (commander.transform.position);
 
-//				// Go towards target and slow down if too close
-				Vector3 arriveVector = arrive (commander.transform.position);
-//
-//				// Flee from antagonist
-				Vector3 fleeVector = flee (commander.transform.position);
-//
-//				// Separate from other close by boids
-				Vector3 separateVector = separate (boidController.getFlock ());
-//
-//				// Cohere to far away boids
-				Vector3 cohereVector = cohere (boidController.getFlock ());
-//
-//				// Align with the rest of the flock
-				Vector3 alignVector = align (boidController.getFlock ());
+				// Go towards target and slow down if too close
+				arriveVector = arrive (commander.transform.position);
 
-				// Avoid boids blocking the view (Arrange, or stagger, with closest bird in peripherals. Like a v)
-				Vector3 viewVector = view (boidController.getFlock ());
+				// Flee from antagonist
+				fleeVector = flee (commander.transform.position);
+		
+				// Conglomerated flocking behaviour (Separate, Cohere, Align and View)
+				flock (boidController.getFlock ());
 
-//				// Sprinkle a bit of randomness to simulate free will
-				Vector3 randomVector = addRandom ();
-//
-				seekVector *= 0.4f;
+				// Sprinkle a bit of randomness to simulate free will
+				randomVector = addRandom ();
+
+				seekVector *= 0.6f;
 				arriveVector *= 0.01f;
 				fleeVector *= 0.0f;
-				separateVector *= 0.2f;
-				cohereVector *= 0.1f;
-				alignVector *= 0.02f;
-				viewVector *= 0.1f;
+				separateVector *= 0.5f;
+				cohereVector *= 0.4f;
+				alignVector *= 0.04f;
+				viewVector *= 0.05f;
 				randomVector *= 0.05f;
 
 				body.AddForce (seekVector);
@@ -80,27 +88,28 @@ public class Boid : MonoBehaviour
 				body.AddForce (alignVector);
 				body.AddForce (viewVector);
 				body.AddForce (randomVector);
-//
+
 				// Point the transform in the direction of it's velocity
 				pointTowardsVelocity ();
 
 				// Clamp velocity
-				if (body.velocity.magnitude > maxVel) {
+				if (body.velocity.sqrMagnitude > maxVelSqrd) {
 					body.velocity = Vector3.ClampMagnitude (body.velocity, maxVel);
-				} else if (body.velocity.magnitude < minVel) {
-					body.velocity = body.velocity.normalized * minVel;
-				}
+				} //else if (body.velocity.magnitude < minVel) {
+//					body.velocity = body.velocity.normalized * minVel;
+//				}
 			}
 			float waitTime = Random.Range (0.005f, 0.05f);
 			yield return new WaitForSeconds (waitTime);
-
 		}
 	}
+
+	Vector3 desired = Vector3.zero;
 
 	// Steer toward target
 	private Vector3 seek (Vector3 targetPosition)
 	{
-		Vector3 desired = targetPosition - body.transform.position;
+		desired = targetPosition - body.transform.position;
 		desired.Normalize ();
 		desired *= maxVel;
 
@@ -111,7 +120,7 @@ public class Boid : MonoBehaviour
 	// Move away from antagonist
 	private Vector3 flee (Vector3 antagonist)
 	{
-		Vector3 desired = (antagonist * -1) - body.transform.position;
+		desired = (antagonist * -1) - body.transform.position;
 		float distance = desired.magnitude;
 
 		desired.Normalize ();
@@ -123,178 +132,134 @@ public class Boid : MonoBehaviour
 			// Don't affect course when antagonist is outside fleeing distance
 		}
 
-		Vector3 steeringVector = desired - body.velocity;
-		steeringVector = Vector3.ClampMagnitude (steeringVector, maxSteeringForce);
-		return steeringVector;
+		desired -= body.velocity;
+		return Vector3.ClampMagnitude (desired, maxSteeringForce);
 	}
+
+
 
 	// Go towards target and slow down if too close
 	private Vector3 arrive (Vector3 target)
 	{
-		Vector3 desired = target - body.transform.position;
+		desired = target - body.transform.position;
 		float distance = desired.magnitude;
 
 		desired.Normalize ();
 
 		if (distance < slowDownDistance) {
-			float m = map (distance, 0, slowDownDistance, 0, maxVel); // Map to max velocity
-			desired *= m;
+			desired *= map (distance, 0, slowDownDistance, 0, maxVel); // Map to max velocity
 		} else {
 			// Continue at max velocity
 			desired *= maxVel;
 		}
 
-		Vector3 steeringVector = desired - body.velocity;
-		steeringVector = Vector3.ClampMagnitude (steeringVector, maxSteeringForce);
-		return steeringVector;
+		desired -= body.velocity;
+		return Vector3.ClampMagnitude (desired, maxSteeringForce);
 	}
 
-	private Vector3 separate (GameObject[] flock)
+	Vector3 separationSum = Vector3.zero;
+	Vector3 cohesionSum = Vector3.zero;
+	Vector3 alignmentSum = Vector3.zero;
+	Vector3 viewSum = Vector3.zero;
+	Vector3 ortho = Vector3.zero;
+
+	private Vector3 flock (GameObject[] flock)
 	{
-		Vector3 sum = Vector3.zero;
-		int tooCloseBoids = 0; // Counting the amount of boids within separation distance 
+		separationSum = Vector3.zero;
+		cohesionSum = Vector3.zero;
+		alignmentSum = Vector3.zero;
+		viewSum = Vector3.zero;
+
+		int tooClose = 0; // Counting the amount of boids within separation distance 
+		int nearEnoughToCohere = 0; // Counting the amount of boids within cohesion distance 
+		int nearEnoughToAlign = 0;
+		int inPeripherals = 0;
+
+		float d = 0;
 
 		foreach (GameObject boid in flock) {
-			float d = Vector3.Distance (boid.transform.position, body.position);
+//			operationCounter++;
 
-			if (d > 0 && d < desiredSeparation) {
-				Vector3 diff = body.position - boid.transform.position;
-				diff.Normalize ();// Should we normalize here?
+			d = Vector3.Distance (boid.transform.position, body.position);
 
-				diff /= d; // Separating less with larger distance
-				sum += diff;
-				tooCloseBoids++;
+			if (d > maxSensingDistance || d == 0) {
+				continue;
 			}
-		}
-		Vector3 steeringVector = Vector3.zero;
-		if (tooCloseBoids > 0) { // Don't divide with 0
-			sum /= tooCloseBoids;
-			sum.Normalize ();
-			sum *= maxVel;
-			steeringVector = sum - body.velocity;
-			steeringVector = Vector3.ClampMagnitude (steeringVector, maxSteeringForce);
-		}
-		return steeringVector;
-	}
-
-	// Go towards mass of flock
-	private Vector3 cohere (GameObject[] flock)
-	{
-		Vector3 sum = Vector3.zero;
-		int nearBoids = 0; // Counting the amount of boids within separation distance 
-
-		foreach (GameObject boid in flock) {
-			float d = Vector3.Distance (boid.transform.position, body.position);
-
-			if (d > desiredCohesion && d < maxSensingDistance) {
-				Vector3 diff = body.position + boid.transform.position;
-				diff.Normalize ();// Should we normalize here?
-
-				diff *= d; // Cohere more with larger distance
-				sum += diff;
-				nearBoids++;
-			}
-		}
-		Vector3 steeringVector = Vector3.zero;
-		if (nearBoids > 0) { // Don't divide with 0
-			sum /= nearBoids;
-			steeringVector = seek (sum);
-		}
-		return steeringVector;
-	}
-
-	Vector3 align (GameObject[] flock)
-	{
-		int nearBoids = 0;
-
-		Vector3 sum = Vector3.zero;
-		foreach (GameObject boid in flock) {
-			float d = Vector3.Distance (boid.transform.position, body.position);
-
-			if (d > 0 && d < maxSensingDistance) {
-				sum += boid.GetComponent <Rigidbody> ().velocity;
-				nearBoids++;
+			// Separation - Separate from other close by boids
+			if (d < desiredSeparation) {
+				separationSum += (body.position - boid.transform.position).normalized / d; // Separating less with larger distance
+				tooClose++;
 			}
 
-		}
-		Vector3 steeringVector = Vector3.zero;
-		if (nearBoids > 0) {
-			sum /= nearBoids;
-			sum.Normalize ();
-			sum *= maxVel;
-			steeringVector = sum - body.velocity;
-			steeringVector = Vector3.ClampMagnitude (steeringVector, maxSteeringForce);
-		}
+			// Cohesion - Cohere to far away boids
+			if (d > desiredCohesion) {
+				cohesionSum += boid.transform.position;
+				nearEnoughToCohere++;
+			}
 
-		return steeringVector;
-	}
+			// Alignment -  Align with the rest of the flock
+			alignmentSum += boid.GetComponent <Rigidbody> ().velocity;
+			nearEnoughToAlign++;
 
-	// Avoid boids blocking the view (Stagger relative to the boids in your peripherals (in front of you))
-	Vector3 view (GameObject[] flock)
-	{
-		int nearBoids = 0;
-
-//		GameObject closestBoid = null;
-//		float distanceToClosest = float.MaxValue;
-//		Vector3 placeToAvoid = Vector3.zero;
-
-		Vector3 sum = Vector3.zero;
-
-		foreach (GameObject boid in flock) {
-			float d = Vector3.Distance (boid.transform.position, body.position);
-			if (d < maxSensingDistance && isInPeripherals (boid) && d > 0) {
-				sum += (boid.transform.position - body.position) / d;
-
-				//				closestBoid = boid;
-//				distanceToClosest = d;
+			// View - Avoid boids blocking the view (Arrange, or stagger, with closest bird in peripherals. Like a v)
+			if (isInPeripherals (boid)) {
+				viewSum += boid.transform.position;
+				inPeripherals++;
 			}	
 		}
 
-//		if (closestBoid != null) {
-//			placeToAvoid = closestBoid.transform.position;
-//		}
-
-		// Get vector orthogonal to diff and down
-		Vector3 diff = sum - body.position;
-		Vector3 ortho = Vector3.Cross (sum, Vector3.down);
-
-		// Make sure the ortogonal vector points in the general direction of the boids velocity
-		if (Vector3.Dot (body.velocity, ortho) < 0) {
-			ortho *= -1;
+		// Separation
+		if (tooClose > 0) { // Don't divide with 0
+			separationSum /= tooClose;
+			separationSum.Normalize ();
+			separationSum *= maxVel;
+			separationSum -= body.velocity;
+			separateVector = Vector3.ClampMagnitude (separationSum, maxSteeringForce);
 		}
 
-		ortho.Normalize ();
-		ortho *= maxVel;
-		ortho -= body.velocity;
-		ortho = Vector3.ClampMagnitude (ortho, maxSteeringForce);
+		// Cohesion
+		if (nearEnoughToCohere > 0) { // Don't divide with 0
+			cohesionSum /= nearEnoughToCohere;
+			cohereVector = seek (cohesionSum);
+		}
 
-		// Debug peripheral vision
-//		if (closestBoid != nu	ll) {
-//			Debug.DrawLine (body.position, closestBoid.transform.position);	
-//		} else {
-//			Debug.DrawRay (body.position, body.velocity, Color.green);
-//		}
+		// Alignment
+		if (nearEnoughToAlign > 0) {
+			alignmentSum /= nearEnoughToAlign;
+			alignmentSum.Normalize ();
+			alignmentSum *= maxVel;
+			alignmentSum -= body.velocity;
+			alignVector = Vector3.ClampMagnitude (alignmentSum, maxSteeringForce);
+		}
 
-		return ortho;
+		// View
+		if (inPeripherals > 0) {
+			// Get vector orthogonal to diff and down
+			viewSum /= inPeripherals;
+			ortho = Vector3.Cross (viewSum - body.position, Vector3.down);
 
+			// Make sure the ortogonal vector points in the general direction of the boids velocity
+			if (Vector3.Dot (body.velocity, ortho) < 0) {
+				ortho *= -1;
+			}
+		
+			ortho.Normalize ();
+			ortho *= maxVel;
+			ortho -= body.velocity;
+			viewVector = Vector3.ClampMagnitude (ortho, maxSteeringForce);
+		}
+		return Vector3.zero;
 	}
-
-
-	int peripheralVisionDegrees = 45;
 
 	bool isInPeripherals (GameObject boid)
 	{
-		Vector3 diff = boid.transform.position - body.position;
-		return Vector3.Angle (body.velocity, diff) < peripheralVisionDegrees;
+		return Vector3.Angle (body.velocity, boid.transform.position - body.position) < peripheralVisionDegrees;
 	}
 
 	Vector3 addRandom ()
 	{
-		Vector3 randomVector = new Vector3 (
-			                       Random.Range (minRandom, maxRandom), 
-			                       Random.Range (minRandom, maxRandom), 
-			                       Random.Range (minRandom, maxRandom));
-		return randomVector;
+		float n = Random.Range (minRandom, maxRandom);
+		return new Vector3 (n, n, n);
 	}
 
 	void pointTowardsVelocity ()
@@ -308,41 +273,6 @@ public class Boid : MonoBehaviour
 		return b1 + (s - a1) * (b2 - b1) / (a2 - a1);
 	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	//	private Vector3 calcVelocity ()
-	//	{
-	//		Vector3 randomize = new Vector3 ((Random.value * 2) * -1, (Random.value * 2) * -1, (Random.value * 2) * -1);
-	//
-	//		randomize.Normalize ();
-	//		boidController = controllerGameObject.GetComponent <BoidController> ();
-	//		Vector3 flockCenter = boidController.flockCenter;
-	//		Vector3 flockVelocity = boidController.flockVelocity;
-	//		Vector3 follow = commander.transform.localPosition;
-	//
-	//		// Head  towards flock center?
-	//		flockCenter = flockCenter - transform.localPosition;
-	//		flockVelocity = flockVelocity - GetComponent <Rigidbody> ().velocity;
-	//		follow = follow - transform.localPosition;
-	//
-	//		return (flockCenter + flockVelocity + follow * 2 + randomize * randomness);
-	//	}
-
 	void Update ()
 	{
 	
@@ -350,10 +280,10 @@ public class Boid : MonoBehaviour
 
 	public void setController (GameObject controller)
 	{
-//		this.controllerGameObject = controller;
 		boidController = controller.GetComponent <BoidController> ();
 		minVel = boidController.getMinVelocity ();
 		maxVel = boidController.getMaxVelocity ();
+		maxVelSqrd = maxVel * maxVel;
 		maxSteeringForce = boidController.getMaxSteeringForce ();
 		randomness = boidController.getRandomness ();
 		slowDownDistance = boidController.getSlowdownDistance ();
