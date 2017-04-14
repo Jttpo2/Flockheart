@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class BoidWatcher : MonoBehaviour
+public class Watcher : MonoBehaviour
 {
-	public Transform boidController;
+	public Transform watchee;
 
 	private Vector3 targetPos;
 
@@ -19,18 +19,21 @@ public class BoidWatcher : MonoBehaviour
 	{
 		prevMousePos = Vector3.zero;
 
-		if (boidController) {
-			targetPos = boidController.GetComponent <BoidController> ().getFlockCenter ();
+		if (watchee) {
+			targetPos = watchee.GetComponent <BoidController> ().getFlockCenter ();
 			offset = targetPos - transform.position;
 		}
 	}
 
 	void LateUpdate ()
 	{
-		if (boidController) {
-			targetPos = boidController.GetComponent <BoidController> ().getFlockCenter ();
-			transform.position = targetPos - offset;
+		if (!watchee) {
+			return;
 		}
+		
+		targetPos = watchee.GetComponent <BoidController> ().getFlockCenter ();
+		transform.position = targetPos - offset;
+
 
 		if (Input.GetMouseButtonDown(0)) {
 			prevMousePos = Input.mousePosition;
@@ -41,7 +44,7 @@ public class BoidWatcher : MonoBehaviour
 		}
 		if (isPanning) {
 			Vector3 mouseDelta = Input.mousePosition - prevMousePos;
-			rotateAroundFlock (mouseDelta.x * rotationSpeedX);
+			rotateAroundWatchee (mouseDelta.x * rotationSpeedX);
 
 			panUpAndDown (mouseDelta.y * rotationSpeedY);
 
@@ -54,12 +57,21 @@ public class BoidWatcher : MonoBehaviour
 		transform.LookAt (targetPos);
 	}
 
-	void rotateAroundFlock(float degrees) {
+	void rotateAroundWatchee(float degrees) {
 		transform.RotateAround (targetPos, Vector3.up, degrees);
 	}
 
 	void panUpAndDown(float degrees) {
-		Vector3 horizontalAndPerpendicularToCamView = Vector3.Cross(targetPos - transform.position, Vector3.up);
-		transform.RotateAround (targetPos, horizontalAndPerpendicularToCamView, degrees);
+		//	Pan axis is horizontal and perpendicular to sight line
+		Vector3 panAxis = Vector3.Cross(offset, Vector3.up);
+
+		Debug.Log (transform.rotation.eulerAngles.x + degrees);
+		if (degrees > 0 && transform.rotation.eulerAngles.x + degrees >= 90) {
+			Debug.Log ("Over 90");
+			return;
+		}
+
+		transform.RotateAround (targetPos, panAxis, degrees);
+//		transform.rotation.eulerAngles
 	}
 }
