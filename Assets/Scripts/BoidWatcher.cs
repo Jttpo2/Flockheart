@@ -14,6 +14,8 @@ public class BoidWatcher : MonoBehaviour
 
 	private float zoomSpeed = 0.01f;
 
+	private float rotationSpeedX = 0.2f;
+
 	void Start ()
 	{
 		prevMousePos = Vector3.zero;
@@ -27,6 +29,11 @@ public class BoidWatcher : MonoBehaviour
 
 	void LateUpdate ()
 	{
+		if (boidController) {
+			targetPos = boidController.GetComponent <BoidController> ().getFlockCenter ();
+			transform.position = targetPos - offset;
+		}
+
 		if (Input.GetMouseButtonDown(0)) {
 			prevMousePos = Input.mousePosition;
 			isPanning = true;
@@ -35,22 +42,26 @@ public class BoidWatcher : MonoBehaviour
 			isPanning = false;
 		}
 		if (isPanning) {
-			Vector3 newPos = Input.mousePosition - prevMousePos;
-			newPos.z *= 0; // Don't change z axis
-			newPos.x *= zoomSpeed;
-			newPos.y *= zoomSpeed;
-			offset -= newPos;
+			Vector3 mouseDelta = Input.mousePosition - prevMousePos;
+//			newPos.z *= 0; // Don't change z axis
+//			newPos.x *= zoomSpeed;
+//			newPos.y *= zoomSpeed;
+//			offset -= newPos;
+
+//			float deltaX = mouseDelta.x;
+			rotateAroundFlock (mouseDelta.x * rotationSpeedX);
+
+			offset = targetPos - transform.position;
 
 			prevMousePos = Input.mousePosition;
 		}
 
-		if (boidController) {
-			targetPos = boidController.GetComponent <BoidController> ().getFlockCenter ();
-			transform.position = targetPos - offset;
+	
+		transform.LookAt (targetPos);
+	}
 
-
-			transform.LookAt (targetPos);
-		}
+	void rotateAroundFlock(float degrees) {
+		transform.RotateAround (targetPos, Vector3.up, degrees);
 	}
 
 //	void zoomIn() {
