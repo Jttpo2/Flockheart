@@ -12,7 +12,7 @@ public class RandomMover : MonoBehaviour
 	public float minY = -20.0f;
 
 	private float initialVelocity = 0.0f;
-	private float maxVelocity = 100.0f;
+	private float maxVelocity = 120.0f;
 
 	private float xScale;
 	private float yScale;
