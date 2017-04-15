@@ -22,6 +22,8 @@ public class BoidController : MonoBehaviour
 	private Vector3 flockCenter;
 	//	private Vector3 flockVelocity;
 
+	private Transform flockCenterTransform;
+
 	private GameObject[] boids;
 
 	private float originBoxX;
@@ -37,6 +39,7 @@ public class BoidController : MonoBehaviour
 	void Start ()
 	{
 		populateBoids ();
+		setupFlockCenterTransform ();
 	}
 
 	void Update ()
@@ -90,7 +93,13 @@ public class BoidController : MonoBehaviour
 		}
 
 		flockCenter /= flockSize;
+		flockCenterTransform.position = flockCenter;
 		//		flockVelocity = theVelocity / flockSize;
+	}
+
+	private void setupFlockCenterTransform ()
+	{
+		flockCenterTransform = transform.Find ("FlockCenter");
 	}
 
 	void calcFrameRate ()
