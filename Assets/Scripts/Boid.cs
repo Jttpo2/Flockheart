@@ -71,12 +71,12 @@ public class Boid : MonoBehaviour
 				// Sprinkle a bit of randomness to simulate free will
 				randomVector = addRandom ();
 
-				seekVector *= 0.6f;
+				seekVector *= 0.75f;
 				arriveVector *= 0.01f;
 				fleeVector *= 0.0f;
 				separateVector *= 0.5f;
 				cohereVector *= 0.4f;
-				alignVector *= 0.04f;
+				alignVector *= 0.08f;
 				viewVector *= 0.05f;
 				randomVector *= 0.05f;
 
