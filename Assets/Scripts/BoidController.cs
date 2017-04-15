@@ -88,7 +88,7 @@ public class BoidController : MonoBehaviour
 		//		Vector3 theVelocity = Vector3.zero;
 
 		foreach (GameObject boid in boids) {
-			flockCenter += boid.transform.localPosition;
+			flockCenter += boid.transform.position;
 			//			theVelocity += boid.GetComponent <Rigidbody> ().velocity;
 		}
 

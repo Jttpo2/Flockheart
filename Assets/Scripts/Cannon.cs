@@ -27,7 +27,7 @@ public class Cannon : MonoBehaviour
 	{
 		if (target) {
 			pointBarrelAt (target);
-//			Debug.DrawLine (transform.position, target.position);
+			Debug.DrawLine (transform.position, target.position);
 		}
 	}
 
