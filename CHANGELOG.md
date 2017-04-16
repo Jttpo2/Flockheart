@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## [Unreleased]
 
+##[0.7.1] - 2017-04-16
+### Fixed
+- Code for 0.7.0 included.
+
 ##[0.7.0] - 2017-04-16
 ### Added
 - Cannon shoots a respawned attractor at flock center.
