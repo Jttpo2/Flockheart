@@ -8,7 +8,7 @@ public class BoidController : MonoBehaviour
 	private Vector3 spawnPoint;
 
 	private float minVelocity = 0.0f;
-	private float maxVelocity = 30.0f;
+	private float maxVelocity = 40.0f;
 	private float maxSteeringForce = 10.0f;
 	private float randomness = 1.0f;
 	private int flockSize = 190;

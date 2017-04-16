@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## [Unreleased]
 
+##[0.7.0] - 2017-04-16
+### Added
+- Cannon shoots a respawned attractor at flock center.
+
 ##[0.6.0] - 2017-04-15
 ### Added
 - Camera rotates around watchee on mouse button 0 down
