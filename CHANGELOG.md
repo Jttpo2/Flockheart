@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## [0.8.0] - 2017-04-16
 ### Added
+- Camera zooms in/out on keyboard A/Z.
+
+## [0.8.0] - 2017-04-16
+### Added
 - Walls that are between camera and attractor/flock get temporarily faded. 
 
 ## [0.7.1] - 2017-04-16

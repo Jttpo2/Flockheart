@@ -7,11 +7,12 @@ public class BoidController : MonoBehaviour
 	public GameObject spawnPointObject;
 	private Vector3 spawnPoint;
 
+	public int flockSize = 190;
+
 	private float minVelocity = 0.0f;
 	private float maxVelocity = 40.0f;
 	private float maxSteeringForce = 10.0f;
 	private float randomness = 1.0f;
-	private int flockSize = 190;
 	private float slowDownDistance = 10.0f;
 	private float fleeingDistance = 20.0f;
 	private float desiredSeparation = 5.0f;
