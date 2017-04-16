@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## [Unreleased]
+### Added
+- Walls that are between camera and attractor/flock get temporarily faded. 
 
 ## [0.7.1] - 2017-04-16
 ### Fixed
