@@ -12,22 +12,21 @@ public class Cannon : MonoBehaviour
 
 	private Transform barrel;
 
-	//	private Vector3 aimHigh = new Vector3 (0, 100, 0);
-	private Vector3 aimHigh = Vector3.zero;
+	private Vector3 aimHigh = new Vector3 (0, 10, 0);
+	//	private Vector3 aimHigh = Vector3.zero;
+	private Vector3 upToForward = new Vector3 (90, 0, 0);
 
 	// Use this for initialization
 	void Start ()
 	{
 		barrel = transform.Find ("Barrel");
-		pointBarrelAt (target);
 	}
 	
 	// Update is called once per frame
 	void Update ()
 	{
 		if (target) {
-			pointBarrelAt (target);
-			Debug.DrawLine (transform.position, target.position);
+			aimAt (target);
 		}
 	}
 
@@ -42,13 +41,10 @@ public class Cannon : MonoBehaviour
 		if (!target || !projectile) {
 			return;
 		}
-			
-		Vector3 toTarget = target.position - transform.position;
-		toTarget.Normalize ();
-		toTarget *= muzzleVelocity * projectile.mass;
-//		Debug.Log ("Fire: " + toTarget + " pMass: " + projectile.mass + " mVel: " + muzzleVelocity);
-		// Aim a bit higher than target
-		toTarget += aimHigh;
+
+		Vector3 toTarget = barrel.up.normalized * muzzleVelocity * projectile.mass;
+//		Debug.DrawRay (transform.position, toTarget, Color.red);
+
 		projectile.AddForce (toTarget);
 	}
 
@@ -60,16 +56,23 @@ public class Cannon : MonoBehaviour
 
 		// Reset projectile motion
 		projectile.velocity = Vector3.zero;
+		projectile.angularVelocity = Vector3.zero;
 		// Move the projectile into the cannon
 		projectile.position = transform.position;
+		alignWithBarrel (projectile);
 	}
 
-	void pointBarrelAt (Transform target)
+	void aimAt (Transform target)
 	{
 		if (!barrel) {
 			return;
 		}
 		barrel.LookAt (target.position + aimHigh);
-		barrel.Rotate (new Vector3 (90, 0, 0));
+		barrel.Rotate (upToForward);
+	}
+
+	void alignWithBarrel (Rigidbody projectile)
+	{
+		projectile.rotation = barrel.rotation;
 	}
 }
