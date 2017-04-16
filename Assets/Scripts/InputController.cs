@@ -1,14 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class KeyboardController : MonoBehaviour
+public class InputController : MonoBehaviour
 {
-
 	public RandomMover randMover;
 	public Cannon cannon;
+	public Camera followCam;
 
 	private readonly KeyCode spawnKey = KeyCode.Space;
 	private readonly KeyCode fireKey = KeyCode.F;
+	private readonly KeyCode zoomInKey = KeyCode.A;
+	private readonly KeyCode zoomOutKey = KeyCode.Z;
 
 	// Use this for initialization
 	void Start ()
@@ -29,6 +31,9 @@ public class KeyboardController : MonoBehaviour
 			if (cannon) {
 				cannon.shoot ();
 			}
+		}
+		if (Input.GetKeyDown (zoomInKey)) {
+			
 		}
 
 	}
