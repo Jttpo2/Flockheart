@@ -15,6 +15,10 @@ public class FollowCamera : MonoBehaviour
 	private float rotationSpeedX = 0.2f;
 	private float rotationSpeedY = 0.2f;
 
+	public float standardZoomAmount = 0.1f;
+	// Currently mimum working value, from manual testing
+	private float minZoomDistance = 6.0f;
+
 	void Start ()
 	{
 		prevMousePos = Vector3.zero;
@@ -80,6 +84,27 @@ public class FollowCamera : MonoBehaviour
 	Vector3 getTargetPos ()
 	{
 		return watchee.position;
+	}
+
+	public void zoom (float amount)
+	{
+		Vector3 desiredOffset = offset + offset.normalized * amount;
+		if (desiredOffset.magnitude < minZoomDistance) {
+			offset.Normalize ();
+			offset *= minZoomDistance;
+		} else {
+			offset = desiredOffset;
+		}
+	}
+
+	public void zoomIn ()
+	{
+		zoom (-standardZoomAmount);
+	}
+
+	public void zoomOut ()
+	{
+		zoom (standardZoomAmount);
 	}
 
 	//	void follow() {
