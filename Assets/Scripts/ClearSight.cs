@@ -19,6 +19,9 @@ public class ClearSight : MonoBehaviour
 
 	private void Update ()
 	{
+		if (!GetComponent <Camera> ().enabled) {
+			return;
+		} 
 		foreach (Transform viewObject in clearObjectsList) {
 			RaycastHit lineHit = new RaycastHit ();
 			if (Physics.Linecast (transform.position, viewObject.position, out lineHit, layerMask)) {
@@ -27,6 +30,7 @@ public class ClearSight : MonoBehaviour
 				if (R == null) {
 					continue;
 				}
+					
 				makeTransparent (R);
 			}
 		}
