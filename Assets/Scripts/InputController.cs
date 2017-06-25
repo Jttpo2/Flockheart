@@ -7,8 +7,8 @@ public class InputController : MonoBehaviour
 	public Cannon cannon;
 	public CamController camController;
 
-	private readonly KeyCode spawnKey = KeyCode.Space;
-	private readonly KeyCode fireKey = KeyCode.F;
+	private readonly KeyCode spawnKey = KeyCode.S;
+	private readonly KeyCode fireKey = KeyCode.Space;
 	private readonly KeyCode zoomInKey = KeyCode.A;
 	private readonly KeyCode zoomOutKey = KeyCode.Z;
 	private readonly KeyCode cycleCamKey = KeyCode.C;
