@@ -15,7 +15,7 @@ public class FollowCamera : MonoBehaviour
 	private float rotationSpeedX = 0.2f;
 	private float rotationSpeedY = 0.2f;
 
-	public float standardZoomAmount = 0.1f;
+	public float standardZoomStep = 0.1f;
 	// Currently mimum working value, from manual testing
 	private float minZoomDistance = 6.0f;
 
@@ -99,12 +99,12 @@ public class FollowCamera : MonoBehaviour
 
 	public void zoomIn ()
 	{
-		zoom (-standardZoomAmount);
+		zoom (-standardZoomStep);
 	}
 
 	public void zoomOut ()
 	{
-		zoom (standardZoomAmount);
+		zoom (standardZoomStep);
 	}
 
 	//	void follow() {

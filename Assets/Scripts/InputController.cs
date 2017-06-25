@@ -5,12 +5,13 @@ public class InputController : MonoBehaviour
 {
 	public RandomMover randMover;
 	public Cannon cannon;
-	public FollowCamera followCam;
+	public CamController camController;
 
-	private readonly KeyCode spawnKey = KeyCode.Space;
-	private readonly KeyCode fireKey = KeyCode.F;
+	private readonly KeyCode spawnKey = KeyCode.S;
+	private readonly KeyCode fireKey = KeyCode.Space;
 	private readonly KeyCode zoomInKey = KeyCode.A;
 	private readonly KeyCode zoomOutKey = KeyCode.Z;
+	private readonly KeyCode cycleCamKey = KeyCode.C;
 
 	// Use this for initialization
 	void Start ()
@@ -33,9 +34,14 @@ public class InputController : MonoBehaviour
 			}
 		}
 		if (Input.GetKey (zoomInKey)) {
-			followCam.zoomIn ();
+			camController.zoomIn ();
 		} else if (Input.GetKey (zoomOutKey)) {
-			followCam.zoomOut ();
+			camController.zoomOut ();
 		}
+		if (Input.GetKeyDown (cycleCamKey)) {
+			if (camController) {
+				camController.nextCam ();
+			}
+		} 
 	}
 }
